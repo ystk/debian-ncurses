@@ -46,8 +46,8 @@
 <FONT COLOR=green><EM>------------------------------------------------------------------------------</EM></FONT>
 
 <b>with</b> <A HREF="terminal_interface__ads.htm#ref_42_9">Terminal_Interface</A>.<A HREF="terminal_interface-curses__ads.htm#ref_49_28">Curses</A>.<A HREF="terminal_interface-curses-aux__ads.htm#ref_50_35">Aux</A>; <b>use</b> <A HREF="terminal_interface__ads.htm#ref_42_9">Terminal_Interface</A>.<A HREF="terminal_interface-curses__ads.htm#ref_49_28">Curses</A>.<A HREF="terminal_interface-curses-aux__ads.htm#ref_50_35">Aux</A>;
-<b>with</b> <A HREF="interfac__ads.htm#ref_36_9">Interfaces</A>.C; <b>use</b> <A HREF="interfac__ads.htm#ref_36_9">Interfaces</A>.C;
-<b>with</b> <A HREF="interfac__ads.htm#ref_36_9">Interfaces</A>.C.Strings; <b>use</b> <A HREF="interfac__ads.htm#ref_36_9">Interfaces</A>.C.Strings;
+<b>with</b> <A HREF="interfac__ads.htm#ref_38_9">Interfaces</A>.C; <b>use</b> <A HREF="interfac__ads.htm#ref_38_9">Interfaces</A>.C;
+<b>with</b> <A HREF="interfac__ads.htm#ref_38_9">Interfaces</A>.C.Strings; <b>use</b> <A HREF="interfac__ads.htm#ref_38_9">Interfaces</A>.C.Strings;
 <b>with</b> Ada.Unchecked_Conversion;
 
 <b>package</b> <b>body</b> <A HREF="terminal_interface__ads.htm#ref_42_9">Terminal_Interface</A>.<A HREF="terminal_interface-curses__ads.htm#ref_49_28">Curses</A>.<FONT COLOR=red><A NAME="ref_48_40" HREF="terminal_interface-curses-terminfo__ads.htm#ref_44_35">Terminfo</A></FONT> <b>is</b>
@@ -100,7 +100,7 @@
       <b>if</b> <A HREF="terminal_interface-curses-terminfo__adb.htm#ref_91_7">Txt2</A> = Null_Ptr <b>then</b>
          <A HREF="terminal_interface-curses-terminfo__ads.htm#ref_59_26">Result</A> := False;
       <b>elsif</b> <A HREF="terminal_interface-curses-terminfo__adb.htm#ref_50_13">Is_MinusOne_Pointer</A> (<A HREF="terminal_interface-curses-terminfo__adb.htm#ref_91_7">Txt2</A>) <b>then</b>
-         <b>raise</b> <A HREF="terminal_interface-curses__ads.htm#ref_383_4">Curses_Exception</A>;
+         <b>raise</b> <A HREF="terminal_interface-curses__ads.htm#ref_385_4">Curses_Exception</A>;
       <b>else</b>
          <A HREF="terminal_interface-curses-terminfo__ads.htm#ref_58_26">Value</A>  := Terminfo_String (<A HREF="terminal_interface-curses-aux__ads.htm#ref_121_13">Fill_String</A> (<A HREF="terminal_interface-curses-terminfo__adb.htm#ref_91_7">Txt2</A>));
          <A HREF="terminal_interface-curses-terminfo__ads.htm#ref_59_26">Result</A> := True;
@@ -121,7 +121,7 @@
       <b>if</b> <A HREF="terminal_interface-curses-terminfo__adb.htm#ref_112_7">Txt2</A> = Null_Ptr <b>then</b>
          <b>return</b> False;
       <b>elsif</b> <A HREF="terminal_interface-curses-terminfo__adb.htm#ref_50_13">Is_MinusOne_Pointer</A> (<A HREF="terminal_interface-curses-terminfo__adb.htm#ref_112_7">Txt2</A>) <b>then</b>
-         <b>raise</b> <A HREF="terminal_interface-curses__ads.htm#ref_383_4">Curses_Exception</A>;
+         <b>raise</b> <A HREF="terminal_interface-curses__ads.htm#ref_385_4">Curses_Exception</A>;
       <b>else</b>
          <b>return</b> True;
       <b>end</b> <b>if</b>;
@@ -159,7 +159,7 @@
          <A HREF="terminal_interface-curses-terminfo__adb.htm#ref_148_7">Err</A> := <A HREF="terminal_interface-curses-terminfo__adb.htm#ref_140_16">tputs</A> (<A HREF="terminal_interface-curses-terminfo__adb.htm#ref_146_7">Txt</A>, <A HREF="terminal_interface-curses-aux__ads.htm#ref_55_12">C_Int</A> (<A HREF="terminal_interface-curses-terminfo__ads.htm#ref_77_26">affcnt</A>), <A HREF="terminal_interface-curses-terminfo__ads.htm#ref_78_26">putc</A>);
       <b>end</b> <b>if</b>;
       <b>if</b> <A HREF="terminal_interface-curses-terminfo__adb.htm#ref_148_7">Err</A> = <A HREF="terminal_interface-curses-aux__ads.htm#ref_72_4">Curses_Err</A> <b>then</b>
-         <b>raise</b> <A HREF="terminal_interface-curses__ads.htm#ref_383_4">Curses_Exception</A>;
+         <b>raise</b> <A HREF="terminal_interface-curses__ads.htm#ref_385_4">Curses_Exception</A>;
       <b>end</b> <b>if</b>;
    <b>end</b> <A HREF="terminal_interface-curses-terminfo__ads.htm#ref_76_14">Put_String</A>;
 

@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2004-2006,2009 Free Software Foundation, Inc.              *
+ * Copyright (c) 2004-2010,2011 Free Software Foundation, Inc.              *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -39,7 +39,7 @@
 #include <wctype.h>
 #endif
 
-MODULE_ID("$Id: lib_add_wch.c,v 1.9 2009/10/24 22:45:42 tom Exp $")
+MODULE_ID("$Id: lib_add_wch.c,v 1.12 2011/03/22 09:31:15 Petr.Pavlu Exp $")
 
 /* clone/adapt lib_addch.c */
 static const cchar_t blankchar = NewChar(BLANK_TEXT);
@@ -81,12 +81,6 @@ render_char(WINDOW *win, cchar_t ch)
 	    if ((pair = GET_WINDOW_PAIR(win)) == 0)
 		pair = GetPair(win->_nc_bkgd);
 	}
-#if 0
-	if (pair > 255) {
-	    cchar_t fixme = ch;
-	    SetPair(fixme, pair);
-	}
-#endif
 	AddAttr(ch, (a & COLOR_MASK(AttrOf(ch))));
 	SetPair(ch, pair);
     }
@@ -128,7 +122,7 @@ newline_forces_scroll(WINDOW *win, NCURSES_SIZE_T * ypos)
 	*ypos = win->_regbottom;
 	result = TRUE;
     } else {
-	*ypos += 1;
+	*ypos = (NCURSES_SIZE_T) (*ypos + 1);
     }
     return result;
 }
@@ -172,8 +166,8 @@ fill_cells(WINDOW *win, int count)
 	if (wadd_wch_literal(win, blank) == ERR)
 	    break;
     }
-    win->_curx = save_x;
-    win->_cury = save_y;
+    win->_curx = (NCURSES_SIZE_T) save_x;
+    win->_cury = (NCURSES_SIZE_T) save_y;
 }
 
 static int
@@ -297,7 +291,7 @@ wadd_wch_literal(WINDOW *win, cchar_t ch)
     if (x > win->_maxx) {
 	return wrap_to_next_line(win);
     }
-    win->_curx = x;
+    win->_curx = (NCURSES_SIZE_T) x;
     return OK;
 }
 
@@ -314,11 +308,11 @@ wadd_wch_nosync(WINDOW *win, cchar_t ch)
 
     /*
      * If we are using the alternate character set, forget about locale.
-     * Otherwise, if the locale * claims the code is printable, treat it that
+     * Otherwise, if the locale claims the code is printable, treat it that
      * way.
      */
     if ((AttrOf(ch) & A_ALTCHARSET)
-	|| iswprint(CharOf(ch)))
+	|| iswprint((wint_t) CharOf(ch)))
 	return wadd_wch_literal(win, ch);
 
     /*
@@ -335,7 +329,7 @@ wadd_wch_nosync(WINDOW *win, cchar_t ch)
 #else
 	tabsize = TABSIZE;
 #endif
-	x += (tabsize - (x % tabsize));
+	x = (NCURSES_SIZE_T) (x + (tabsize - (x % tabsize)));
 	/*
 	 * Space-fill the tab on the bottom line so that we'll get the
 	 * "correct" cursor position.

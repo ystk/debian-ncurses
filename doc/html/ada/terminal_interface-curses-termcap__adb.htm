@@ -46,8 +46,8 @@
 <FONT COLOR=green><EM>------------------------------------------------------------------------------</EM></FONT>
 
 <b>with</b> <A HREF="terminal_interface__ads.htm#ref_42_9">Terminal_Interface</A>.<A HREF="terminal_interface-curses__ads.htm#ref_49_28">Curses</A>.<A HREF="terminal_interface-curses-aux__ads.htm#ref_50_35">Aux</A>; <b>use</b> <A HREF="terminal_interface__ads.htm#ref_42_9">Terminal_Interface</A>.<A HREF="terminal_interface-curses__ads.htm#ref_49_28">Curses</A>.<A HREF="terminal_interface-curses-aux__ads.htm#ref_50_35">Aux</A>;
-<b>with</b> <A HREF="interfac__ads.htm#ref_36_9">Interfaces</A>.C; <b>use</b> <A HREF="interfac__ads.htm#ref_36_9">Interfaces</A>.C;
-<b>with</b> <A HREF="interfac__ads.htm#ref_36_9">Interfaces</A>.C.Strings; <b>use</b> <A HREF="interfac__ads.htm#ref_36_9">Interfaces</A>.C.Strings;
+<b>with</b> <A HREF="interfac__ads.htm#ref_38_9">Interfaces</A>.C; <b>use</b> <A HREF="interfac__ads.htm#ref_38_9">Interfaces</A>.C;
+<b>with</b> <A HREF="interfac__ads.htm#ref_38_9">Interfaces</A>.C.Strings; <b>use</b> <A HREF="interfac__ads.htm#ref_38_9">Interfaces</A>.C.Strings;
 
 <b>package</b> <b>body</b> <A HREF="terminal_interface__ads.htm#ref_42_9">Terminal_Interface</A>.<A HREF="terminal_interface-curses__ads.htm#ref_49_28">Curses</A>.<FONT COLOR=red><A NAME="ref_47_40" HREF="terminal_interface-curses-termcap__ads.htm#ref_42_35">Termcap</A></FONT> <b>is</b>
 
@@ -64,7 +64,7 @@
       To_C (<A HREF="terminal_interface-curses-termcap__ads.htm#ref_59_24">Name</A>, <A HREF="terminal_interface-curses-termcap__adb.htm#ref_54_7">NameTxt</A>, <A HREF="terminal_interface-curses-termcap__adb.htm#ref_55_7">Length</A>);
       <A HREF="terminal_interface-curses-termcap__adb.htm#ref_57_7">result</A> := <A HREF="terminal_interface-curses-termcap__adb.htm#ref_51_16">tgetent</A> (char_array (<A HREF="terminal_interface-curses-termcap__adb.htm#ref_56_7">ignored</A>), <A HREF="terminal_interface-curses-termcap__adb.htm#ref_54_7">NameTxt</A>);
       <b>if</b> <A HREF="terminal_interface-curses-termcap__adb.htm#ref_57_7">result</A> = -1 <b>then</b>
-         <b>raise</b> <A HREF="terminal_interface-curses__ads.htm#ref_383_4">Curses_Exception</A>;
+         <b>raise</b> <A HREF="terminal_interface-curses__ads.htm#ref_385_4">Curses_Exception</A>;
       <b>else</b>
          <b>return</b> Boolean'Val (<A HREF="terminal_interface-curses-termcap__adb.htm#ref_57_7">result</A>);
       <b>end</b> <b>if</b>;

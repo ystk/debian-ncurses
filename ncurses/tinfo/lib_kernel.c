@@ -48,7 +48,7 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$Id: lib_kernel.c,v 1.29 2010/01/16 16:33:38 tom Exp $")
+MODULE_ID("$Id: lib_kernel.c,v 1.31 2010/12/19 01:21:19 tom Exp $")
 
 static int
 _nc_vdisable(void)
@@ -59,7 +59,7 @@ _nc_vdisable(void)
 #endif
 #if defined(_PC_VDISABLE)
     if (value == -1) {
-	value = fpathconf(0, _PC_VDISABLE);
+	value = (int) fpathconf(0, _PC_VDISABLE);
 	if (value == -1) {
 	    value = 0377;
 	}
@@ -95,7 +95,7 @@ NCURSES_SP_NAME(erasechar) (NCURSES_SP_DCL0)
 	result = termp->Ottyb.sg_erase;
 #endif
     }
-    returnChar(result);
+    returnChar((char) result);
 }
 
 #if NCURSES_SP_FUNCS
@@ -130,7 +130,7 @@ NCURSES_SP_NAME(killchar) (NCURSES_SP_DCL0)
 	result = termp->Ottyb.sg_kill;
 #endif
     }
-    returnChar(result);
+    returnChar((char) result);
 }
 
 #if NCURSES_SP_FUNCS

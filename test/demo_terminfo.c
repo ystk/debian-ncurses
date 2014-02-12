@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2009 Free Software Foundation, Inc.                        *
+ * Copyright (c) 2009,2010 Free Software Foundation, Inc.                   *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -29,7 +29,7 @@
 /*
  * Author: Thomas E. Dickey
  *
- * $Id: demo_terminfo.c,v 1.6 2009/07/17 01:02:08 tom Exp $
+ * $Id: demo_terminfo.c,v 1.9 2010/11/28 00:15:27 tom Exp $
  *
  * A simple demo of the terminfo interface.
  */
@@ -37,11 +37,16 @@
 #include <test.priv.h>
 
 #ifdef NCURSES_VERSION
+#if !(defined(HAVE_TERM_ENTRY_H) && HAVE_TERM_ENTRY_H)
+#undef NCURSES_XNAMES
+#define NCURSES_XNAMES 0
+#endif
 #if NCURSES_XNAMES
 #include <term_entry.h>
 #endif
 #endif
 
+#if HAVE_TIGETSTR
 #if defined(HAVE_CURSES_DATA_BOOLNAMES) || defined(DECL_CURSES_DATA_BOOLNAMES)
 
 static bool b_opt = FALSE;
@@ -175,13 +180,13 @@ demo_terminfo(char *name)
 		    || (NUM_NUMBERS(term) != NUMCOUNT)
 		    || (NUM_STRINGS(term) != STRCOUNT))) {
 		for (n = BOOLCOUNT; n < NUM_BOOLEANS(term); ++n) {
-		    dumpit(ExtBoolname(term, n, boolnames));
+		    dumpit(ExtBoolname(term, (int) n, boolnames));
 		}
 		for (n = NUMCOUNT; n < NUM_NUMBERS(term); ++n) {
-		    dumpit(ExtNumname(term, n, numnames));
+		    dumpit(ExtNumname(term, (int) n, numnames));
 		}
 		for (n = STRCOUNT; n < NUM_STRINGS(term); ++n) {
-		    dumpit(ExtStrname(term, n, strnames));
+		    dumpit(ExtStrname(term, (int) n, strnames));
 		}
 	    }
 #endif
@@ -302,3 +307,11 @@ main(int argc GCC_UNUSED, char *argv[]GCC_UNUSED)
     ExitProgram(EXIT_FAILURE);
 }
 #endif
+#else /* !HAVE_TIGETSTR */
+int
+main(int argc GCC_UNUSED, char *argv[]GCC_UNUSED)
+{
+    printf("This program requires the terminfo functions such as tigetstr\n");
+    ExitProgram(EXIT_FAILURE);
+}
+#endif /* HAVE_TIGETSTR */

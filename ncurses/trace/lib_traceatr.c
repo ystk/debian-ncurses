@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 1998-2008,2009 Free Software Foundation, Inc.              *
+ * Copyright (c) 1998-2010,2011 Free Software Foundation, Inc.              *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -43,7 +43,7 @@
 #define CUR SP_TERMTYPE
 #endif
 
-MODULE_ID("$Id: lib_traceatr.c,v 1.68 2009/12/12 21:37:37 tom Exp $")
+MODULE_ID("$Id: lib_traceatr.c,v 1.74 2011/01/22 19:48:01 tom Exp $")
 
 #define COLOR_OF(c) ((c < 0) ? "default" : (c > 7 ? color_of(c) : colors[c].name))
 
@@ -132,11 +132,11 @@ _traceattr2(int bufnum, chtype newmode)
 	for (n = 0; n < SIZEOF(names); n++) {
 	    if ((newmode & names[n].val) != 0) {
 		if (result[1] != '\0')
-		    result = _nc_trace_bufcat(bufnum, "|");
+		    (void) _nc_trace_bufcat(bufnum, "|");
 		result = _nc_trace_bufcat(bufnum, names[n].name);
 
 		if (names[n].val == A_COLOR) {
-		    short pairnum = PAIR_NUMBER(newmode);
+		    short pairnum = (short) PairNumber(newmode);
 #ifdef USE_TERMLIB
 		    /* pair_content lives in libncurses */
 		    (void) sprintf(temp, "{%d}", pairnum);
@@ -176,6 +176,14 @@ _traceattr(attr_t newmode)
 }
 
 /* Trace 'int' return-values */
+NCURSES_EXPORT(int)
+_nc_retrace_int_attr_t(attr_t code)
+{
+    T((T_RETURN("%s"), _traceattr(code)));
+    return (int) code;
+}
+
+/* Trace 'attr_t' return-values */
 NCURSES_EXPORT(attr_t)
 _nc_retrace_attr_t(attr_t code)
 {
@@ -241,14 +249,14 @@ _nc_altcharset_name(attr_t attr, chtype ch)
 	const ALT_NAMES *strp;
 
 	for (cp = acs_chars; cp[0] && cp[1]; cp += 2) {
-	    if (ChCharOf(cp[1]) == ChCharOf(ch)) {
+	    if (ChCharOf(UChar(cp[1])) == ChCharOf(ch)) {
 		found = cp;
 		/* don't exit from loop - there may be redefinitions */
 	    }
 	}
 
 	if (found != 0) {
-	    ch = ChCharOf(*found);
+	    ch = ChCharOf(UChar(*found));
 	    for (strp = names; strp->val; strp++)
 		if (strp->val == ch) {
 		    result = strp->name;
@@ -327,10 +335,10 @@ _tracecchar_t2(int bufnum, const cchar_t *ch)
 		    PUTC_ch = ch->chars[PUTC_i];
 		    if (PUTC_ch == L'\0') {
 			if (PUTC_i == 0)
-			    result = _nc_trace_bufcat(bufnum, "\\000");
+			    (void) _nc_trace_bufcat(bufnum, "\\000");
 			break;
 		    }
-		    PUTC_n = wcrtomb(PUTC_buf, ch->chars[PUTC_i], &PUT_st);
+		    PUTC_n = (int) wcrtomb(PUTC_buf, ch->chars[PUTC_i], &PUT_st);
 		    if (PUTC_n <= 0) {
 			if (PUTC_ch != L'\0') {
 			    /* it could not be a multibyte sequence */

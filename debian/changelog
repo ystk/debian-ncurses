@@ -1,3 +1,252 @@
+ncurses (5.9-10) unstable; urgency=low
+
+  * Drop the dependency of the biarch packages on libtinfo5
+    (Closes: #678440).
+    - Convert /usr/share/doc/lib{32,64}tinfo5 back to directories.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Wed, 27 Jun 2012 17:20:15 +0200
+
+ncurses (5.9-9) unstable; urgency=low
+
+  * New patch 05-fix-poll-test.diff adapted from the 20120608 upstream
+    patchlevel, correcting the CF_FUNC_POLL test which inadvertently
+    failed if standard input was redirected, as is the case on the Debian
+    buildds (Closes: #676461).
+  * Assume working poll() for the biarch packages where we cannot run the
+    configure check.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Thu, 14 Jun 2012 17:02:56 +0200
+
+ncurses (5.9-8) unstable; urgency=low
+
+  * Update terminfo descriptions to the 20120602 upstream patchlevel.
+    - Correct 'op' for bterm (Closes: #671227).
+  * Change section of ncurses-{base,term} to misc (see #671616).
+  * Move the Breaks against old binutils-gold versions to libtinfo-dev.
+  * Conflict with libc6-i386 (<= 2.9-18) in lib32tinfo{5,-dev}.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Sun, 03 Jun 2012 10:17:35 +0200
+
+ncurses (5.9-7) unstable; urgency=low
+
+  * Take over bterm terminfo entry from bogl-bterm in ncurses-term
+    (Closes: #562134).
+  * Make libtinfo5 rather than libncurses5 the main package where the
+    Debian FAQ and TODO files are installed.
+  * Let all library, -dev and -dbg packages directly depend on libtinfo5
+    and replace their /usr/share/doc directories with symlinks to save
+    some space.
+  * Mark ncurses-base and ncurses-term as Multi-Arch: foreign.
+  * Explicitly blacklist fbterm and stterm terminfo entries to prevent
+    accidents like #665877.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Tue, 01 May 2012 10:07:23 +0200
+
+ncurses (5.9-6) unstable; urgency=low
+
+  [ Craig Small ]
+  * Permit DMs to upload
+
+  [ Sven Joachim ]
+  * Blacklist st and st-256color terminfo entries until suckless-tools
+    stops shipping them (Closes: #665877).
+  * Update terminfo descriptions to the 20120407 upstream patchlevel.
+    - Revert to linux2.2 rather than linux3.0 as the base for the linux
+      terminfo entry, since the latter breaks display of line drawing
+      characters in non-UTF-8 locales (closes: #665959).
+
+ -- Sven Joachim <svenjoac@gmx.de>  Mon, 09 Apr 2012 10:35:00 +0200
+
+ncurses (5.9-5) unstable; urgency=low
+
+  * Configure with /etc/terminfo as default terminfo dir
+    (Closes: #653435, #654672).
+    - New patch 04-fix-tabset-directory.diff to prevent incorrect tabset
+      directory in compiled terminfo descriptions (see #509919).
+  * Mention in debian/README.source that a non-standard autoconf version is
+    required to regenerate 'configure' (Closes: #580190).
+  * New patch 00-terminfo-update.diff, updating terminfo descriptions to
+    the 20120211 upstream patchlevel.
+    - Includes entries for gnu-mach and gnu-mach-color, installed into
+      the ncurses-base package (Closes: #614316).
+  * Update xterm.ti from xterm 276.  All xterm-* terminfo entries should
+    have kbs=\177 now.  Update patch 02-debian-backspace.diff accordingly.
+  * Drop patch 05-emdebian-wchar.diff, no longer needed.
+  * Protect shell loops in debian/rules with "set -e" to ensure that
+    any errors in them are caught (see Policy §4.6).
+  * Upgrade Standards-Version to 3.9.3, no changes needed.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Tue, 28 Feb 2012 20:36:51 +0100
+
+ncurses (5.9-4) unstable; urgency=low
+
+  * Create debian/libtermcap.so at build time rather than trying to ship
+    it, since dpkg-source does not like to do the latter (Closes: #647253).
+
+ -- Sven Joachim <svenjoac@gmx.de>  Tue, 01 Nov 2011 20:27:49 +0100
+
+ncurses (5.9-3) unstable; urgency=low
+
+  * Move the libtermcap symlinks to lib{32,}tinfo-dev (Closes: #644426).
+    - Symlink libtinfo.a to libtermcap.a.
+    - Use a linker script for libtermcap.so to work around ldconfig
+      bug #249122.
+  * Move the libtic libraries from lib*ncurses5 to lib*tinfo5
+    (Closes: #644933) and their development files from lib*ncurses5-dev
+    to lib*tinfo-dev.
+  * Drop libticw from libncursesw5 and configure with "--with-ticlib=tic"
+    to share the same tic library between libncurses5 and libncursesw5.
+  * Don't mark libncurses5-dev and libncursesw5-dev as "Multi-Arch: same"
+    for now (Closes: #646761).
+  * Link the example programs against ncursesw rather than ncurses.
+  * Add Breaks against binutils-gold (<< 2.21.53.20110910) to
+    libncurses5-dev and libncursesw5-dev (see #644708).
+  * Mention in /etc/terminfo/README that ${HOME}/.terminfo is the first 
+    directory where ncurses looks for terminfo files (LP: #384285).
+  * Obtain CPPFLAGS from dpkg-buildflags.
+  * Drop the lintian overrides introduced in 5.9-2.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Mon, 31 Oct 2011 17:18:46 +0100
+
+ncurses (5.9-2) unstable; urgency=low
+
+  * Build libncurses and libncursesw with "--with-termlib" and split out
+    libtinfo* packages to allow building a libreadline that does not link
+    against libncurses.  Thanks to Matthias Klose for the initial patch.
+    (Closes: #631592)
+    - Add Pre-dependency on libtinfo5 to libncurses5 to prevent possible
+      symbol lookup errors if libncurses5 is unpacked before libtinfo5.
+    - Replace the libncurses{w,}.so symlinks with linker scripts.  Since
+      lintian does not like those in multiarch paths, temporarily add
+      overrides (see #639735).
+    - Remove spurious leftover libncurses5.so.5 symlinks (Closes: #224450,
+      LP: #836246).
+  * Ship the ncurses.supp file in libtinfo-dev (Closes: #627474).
+  * Configure all library builds except libncurses5 with "--without-progs"
+    to reduce build time a bit.
+  * Add build-arch and build-indep targets to debian/rules.
+  * Use dh_install's "--fail-missing" option.
+  * Build for multiarch (Closes: #638281).
+    - Mark libncurses5, libncursesw5, libtinfo5 and their -dev counterparts
+      as Multi-Arch: same.
+    - Mark ncurses-bin as Multi-Arch: foreign.
+  * New patch 03-debian-ncursesconfig-omit-L.diff to omit the "-L" part
+    from "ncurses5-config --libs" (see #638281).
+  * Add rxvt-256color and rxvt-88color entries to debian/rxvt.ti
+    (Closes: #638189).
+  * Bump debhelper compatibility level to 8.
+  * Upgrade Standards-Version to 3.9.2, no changes needed.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Tue, 13 Sep 2011 20:01:05 +0200
+
+ncurses (5.9-1) unstable; urgency=low
+
+  * New upstream release.
+  * Correct dh_strip usage in debian/rules (Closes: #619939).
+
+ -- Sven Joachim <svenjoac@gmx.de>  Tue, 05 Apr 2011 20:37:53 +0200
+
+ncurses (5.8+20110307-1) unstable; urgency=low
+
+  * New upstream patchlevel.
+    - Fixes bad bound checks in newwin() (Closes: #616711, #617210).
+  * Update years in debian/copyright.
+  * Add a debian/watch.patchlevel file for checking/downloading weekly
+    snapshots with uscan.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Tue, 08 Mar 2011 20:32:23 +0100
+
+ncurses (5.8-1) unstable; urgency=low
+
+  * New upstream release.
+  * Drop patch 01-debian-kfreebsd-terminfo.patch, applied upstream.
+  * Ship .pc files for pkg-config in libncurses5-dev and libncursesw5-dev,
+    adding a build-dependency on pkg-config (Closes: #609614).
+  * Update rxvt-unicode terminfo description from upstream CVS Rev 1.29.
+    - Introduce an rxvt-unicode-256color terminfo entry in ncurses-term
+      (Closes: #613171).
+    - Fix typo in kIC terminfo capability (Closes: #446444).
+  * Adjust the Replaces/Breaks combination on mlterm-common, now that
+    mlterm 3.0.2-1 has dropped the mlterm terminfo entry.
+  * Fix the libncursesw5-dbg preinst which had been removing the wrong
+    symlink since it was introduced.
+  * Drop the other preinst scripts, they were only necessary for upgrades
+    from pre-Lenny versions.
+  * Use linux-any wildcard for libgpm-dev Build-Depends and
+    libgpm2 Recommends instead of using a list of negated architectures.
+  * Do not run uupdate from debian/watch.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Mon, 28 Feb 2011 19:05:25 +0100
+
+ncurses (5.7+20101128-1) experimental; urgency=low
+
+  [ Sven Joachim ]
+  * New upstream patchlevel.
+    - Clarify that infotocap, captoinfo and tic read text files and do
+      not work with compiled terminfo files (Closes: #593920).
+  * Remove dangling /usr/share/terminfo/k/kon2 symlink (Closes: #522435).
+  * Add an ncurses-examples package containing the compiled test programs
+    (Closes: #34182).  Stop shipping the sources in libncurses5-dev.
+  * Move documentation and section 3 manpages to a new ncurses-doc package
+    (Closes: #233400).  Suggest ncurses-doc in all -dev packages.
+  * Register the documentation in doc-base (Closes: #451667).
+  * Remove the rather useless README.Debian (Closes: #606034).
+  * Move libtic libraries to /usr.
+  * Tighten the dependencies of the lib{32,64}ncurses*-dev packages to their
+    regular counterparts.
+  * Provide symbols files in all library packages.
+    - Use them to compute the dependencies of the other packages instead of
+      messing around with local shlibs files.
+  * Ship mlterm terminfo in ncurses-term (see #485448).
+  * Ship curses and termcap symlinks in lib{32,64}ncurses5-dev (LP: #485118).
+  * Add lintian override for the empty /usr/share/terminfo directory that
+    was introduced in 5.7+20100313-2.
+  * Stop building the test programs in every library build.
+  * Fix non-idempotency of the install (and thus the binary) target in
+    debian/rules introduced in 5.7+20100313-1.
+  * Do not unnecessarily add /lib32 and /usr/lib32 to dh_shlibdeps' search
+    path when calculating the dependencies of the 32-bit libraries.
+  * Do not allow dh_shlibdeps to fail for the 64-bit libraries.
+  * Drop most patches as obsolete or unused:
+    - 09-fix-delscreen-segfault.diff, applied upstream.
+    - 06-kfreebsd.diff, apparently no longer needed.
+    - 03-linux-use-fsuid.diff, patched code that is not compiled if ncurses
+      is configured with "--disable-termcap", as we do.
+    - 01-use-d-reentrant.diff, no longer needed since all architectures moved
+      away from LinuxThreads and Policy 3.9.1 has explicitly removed the need
+      to #define _REENTRANT.
+  * Refresh all remaining Debian patches and add DEP-3 headers to them.
+  * Remove the fix for bug #127622 from 02-debian-backspace.diff,
+    no longer needed.
+  * Update patch 02-debian-backspace.diff to get kbs=\177 in all screen-*
+    terminfo entries (Closes: #602300).
+  * Drop the rather outdated screen terminfo from the debian directory and use
+    the one provided by upstream's terminfo.src instead.
+  * Get CFLAGS, CXXFLAGS and LDFLAGS from dpkg-buildflags, adding a build
+    dependency on dpkg-dev (>= 1.15.7).
+  * Switch to format 3.0 (quilt).
+    - Remove quilt build dependency and patch/unpatch logic from debian/rules.
+    - Drop debian/README.source.
+  * Add a debian/watch file.
+  * Extend the package descriptions.
+  * Remove duplicate "Priority:" fields from debian/control.
+  * Update debian/copyright:
+    - Update FSF Copyright years.
+    - Mention other copyright holders and licenses.
+    - Give a pointer to the current location of the ncurses sources.
+    - Stop mentioning Debian changes.
+  * Upgrade Standards-Version to 3.9.1, no changes needed.
+
+  [ Loïc Minier ]
+  * Update patch 05-emdebian-wchar to apply cleanly.
+  * Drop 08-pkg-config-libdir patch as dpkg >= 1.15.6 don't set
+    PKG_CONFIG_LIBDIR anymore.
+
+  [ Steve Langasek ]
+  * Export LDFLAGS in debian/rules (Closes: #586144).
+
+ -- Sven Joachim <svenjoac@gmx.de>  Mon, 29 Nov 2010 16:41:55 +0100
+
 ncurses (5.7+20100313-5) unstable; urgency=low
 
   * New patch 01-debian-kfreebsd-terminfo.patch, adding a cons25-debian

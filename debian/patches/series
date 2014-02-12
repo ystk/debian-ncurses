@@ -1,8 +1,5 @@
-01-debian-kfreebsd-terminfo.patch
-01-use-d-reentrant.diff
+00-terminfo-update.diff
 02-debian-backspace.diff
-03-linux-use-fsuid.diff
-05-emdebian-wchar.diff
-06-kfreebsd.diff
-08-pkg-config-libdir.diff
-09-fix-delscreen-segfault.diff
+03-debian-ncursesconfig-omit-L.diff
+04-fix-tabset-directory.diff
+05-fix-poll-test.diff

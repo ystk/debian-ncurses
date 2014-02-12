@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2008,2009 Free Software Foundation, Inc.                   *
+ * Copyright (c) 2008-2009,2010 Free Software Foundation, Inc.              *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -31,12 +31,18 @@
  *                                                                          *
  ****************************************************************************/
 
-/* $Id: nc_mingw.h,v 1.1 2009/02/07 23:33:19 tom Exp $ */
+/* $Id: nc_mingw.h,v 1.3 2010/09/25 22:16:12 juergen Exp $ */
 
 #ifndef NC_MINGW_H
 #define NC_MINGW_H 1
 
-#define WINVER 0x0501
+#ifdef WINVER
+#  if WINVER < 0x0501
+#    error WINVER must at least be 0x0501
+#  endif  
+#else
+#  define WINVER 0x0501
+#endif
 #include <windows.h>
 
 #undef sleep
@@ -55,5 +61,9 @@ extern int _nc_gettimeofday(struct timeval *, void *);
 #define SIGHUP  1
 #define SIGKILL 9
 #define getlogin() "username"
+
+#undef wcwidth
+#define wcwidth(ucs) _nc_wcwidth(ucs)
+extern int _nc_wcwidth(wchar_t);
 
 #endif /* NC_MINGW_H */

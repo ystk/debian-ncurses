@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2005-2008,2009 Free Software Foundation, Inc.              *
+ * Copyright (c) 2005-2010,2011 Free Software Foundation, Inc.              *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -26,7 +26,7 @@
  * authorization.                                                           *
  ****************************************************************************/
 /*
- * $Id: demo_menus.c,v 1.29 2009/10/24 21:19:27 tom Exp $
+ * $Id: demo_menus.c,v 1.32 2011/01/15 20:02:47 tom Exp $
  *
  * Demonstrate a variety of functions from the menu library.
  * Thomas Dickey - 2005/4/9
@@ -202,7 +202,7 @@ menu_offset(MenuNo number)
 #endif
 
 	/* FIXME: MENU.itemlen seems the only way to get actual width of items */
-	result = (number - (eBanner + 1)) * (mpBanner->itemlen + spc_rows);
+	result = (number - (eBanner + 1)) * (menu_itemwidth(mpBanner) + spc_rows);
     }
     return result;
 }
@@ -546,8 +546,8 @@ perform_trace_menu(int cmd)
 	    trace(newtrace);
 	    Trace(("trace level interactively set to %s", tracetrace(_nc_tracing)));
 
-	    (void) mvprintw(LINES - 2, 0,
-			    "Trace level is %s\n", tracetrace(_nc_tracing));
+	    MvPrintw(LINES - 2, 0,
+		     "Trace level is %s\n", tracetrace(_nc_tracing));
 	    refresh();
 	}
     }

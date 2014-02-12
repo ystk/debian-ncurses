@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2002-2007,2009 Free Software Foundation, Inc.              *
+ * Copyright (c) 2002-2009,2010 Free Software Foundation, Inc.              *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -26,7 +26,7 @@
  * authorization.                                                           *
  ****************************************************************************/
 /*
- * $Id: ins_wide.c,v 1.11 2009/09/12 23:02:26 tom Exp $
+ * $Id: ins_wide.c,v 1.15 2010/12/12 00:20:14 tom Exp $
  *
  * Demonstrate the wins_wstr() and wins_wch functions.
  * Thomas Dickey - 2002/11/23
@@ -51,10 +51,10 @@
 /* definitions to make it simpler to compare with inserts.c */
 #define InsNStr    ins_nwstr
 #define InsStr     ins_wstr
-#define MvInsNStr  mvins_nwstr
-#define MvInsStr   mvins_wstr
-#define MvWInsNStr mvwins_nwstr
-#define MvWInsStr  mvwins_wstr
+#define MvInsNStr  (void) mvins_nwstr
+#define MvInsStr   (void) mvins_wstr
+#define MvWInsNStr (void) mvwins_nwstr
+#define MvWInsStr  (void) mvwins_wstr
 #define WInsNStr   wins_nwstr
 #define WInsStr    wins_wstr
 
@@ -74,7 +74,7 @@ static int n_opt = -1;
 static void
 legend(WINDOW *win, int level, Options state, wchar_t *buffer, int length)
 {
-    NCURSES_CONST char *showstate;
+    const char *showstate;
 
     switch (state) {
     default:
@@ -96,7 +96,7 @@ legend(WINDOW *win, int level, Options state, wchar_t *buffer, int length)
     wprintw(win,
 	    "The Strings/Chars displays should match.  Enter any characters, except:\n");
     wprintw(win,
-	    "down-arrow or ^N to repeat on next line, 'w' for inner window, 'q' to exit.\n");
+	    "down-arrow or ^N to repeat on next line, ^W for inner window, ESC to exit.\n");
     wclrtoeol(win);
     wprintw(win, "Level %d,%s inserted %d characters <", level,
 	    showstate, length);
@@ -146,7 +146,7 @@ ConvertCh(chtype source, cchar_t *target)
 {
     wchar_t tmp_wchar[2];
 
-    tmp_wchar[0] = source;
+    tmp_wchar[0] = (wchar_t) source;
     tmp_wchar[1] = 0;
     if (setcchar(target, tmp_wchar, A_NORMAL, 0, (void *) 0) == ERR) {
 	beep();
@@ -258,14 +258,14 @@ test_inserts(int level)
     keypad(work, TRUE);
 
     for (col = margin + 1; col < COLS; col += MY_TABSIZE)
-	mvwvline(work, row, col, '.', limit - 2);
+	MvWVLine(work, row, col, '.', limit - 2);
 
-    mvwvline(work, row, margin, ACS_VLINE, limit - 2);
-    mvwvline(work, row, margin + 1, ACS_VLINE, limit - 2);
+    MvWVLine(work, row, margin, ACS_VLINE, limit - 2);
+    MvWVLine(work, row, margin + 1, ACS_VLINE, limit - 2);
     limit /= 2;
 
-    mvwaddstr(work, 1, 2, "String");
-    mvwaddstr(work, limit + 1, 2, "Chars");
+    MvWAddStr(work, 1, 2, "String");
+    MvWAddStr(work, limit + 1, 2, "Chars");
     wnoutrefresh(work);
 
     buffer[length = 0] = '\0';
@@ -412,19 +412,19 @@ test_inserts(int level)
 	    switch (option) {
 	    case oDefault:
 		if (move(limit + row, col) != ERR) {
-		    InsCh(ch);
+		    InsCh((chtype) ch);
 		}
 		break;
 	    case oMove:
-		MvInsCh(limit + row, col, ch);
+		MvInsCh(limit + row, col, (chtype) ch);
 		break;
 	    case oWindow:
 		if (wmove(work, limit + row, col) != ERR) {
-		    WInsCh(work, ch);
+		    WInsCh(work, (chtype) ch);
 		}
 		break;
 	    case oMoveWindow:
-		MvWInsCh(work, limit + row, col, ch);
+		MvWInsCh(work, limit + row, col, (chtype) ch);
 		break;
 	    }
 

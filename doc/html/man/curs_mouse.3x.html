@@ -28,7 +28,7 @@
   * sale, use or other dealings in this Software without prior written       *
   * authorization.                                                           *
   ****************************************************************************
-  * @Id: curs_mouse.3x,v 1.34 2010/01/02 21:45:42 tom Exp @
+  * @Id: curs_mouse.3x,v 1.38 2010/12/04 18:38:55 tom Exp @
 -->
 <HTML>
 <HEAD>
@@ -98,6 +98,7 @@
 
        Here are the mouse event type masks which may be defined:
 
+
        <EM>Name</EM>                     <EM>Description</EM>
        ---------------------------------------------------------------------
        BUTTON1_PRESSED          mouse button 1 down
@@ -110,9 +111,10 @@
        BUTTON2_RELEASED         mouse button 2 up
        BUTTON2_CLICKED          mouse button 2 clicked
        BUTTON2_DOUBLE_CLICKED   mouse button 2 double clicked
+
+
        BUTTON2_TRIPLE_CLICKED   mouse button 2 triple clicked
        ---------------------------------------------------------------------
-
        BUTTON3_PRESSED          mouse button 3 down
        BUTTON3_RELEASED         mouse button 3 up
        BUTTON3_CLICKED          mouse button 3 clicked
@@ -213,7 +215,7 @@
 
               <STRONG>getmouse</STRONG>
                    returns an error.  If no mouse driver was ini-
-                   tialized, or if the mask parameter is zero, It
+                   tialized, or if the mask parameter is zero, it
                    also returns an error if no more events remain
                    in the queue.
 
@@ -300,7 +302,8 @@
 
 </PRE>
 <H2>SEE ALSO</H2><PRE>
-       <STRONG><A HREF="ncurses.3x.html">curses(3x)</A></STRONG>, <STRONG><A HREF="curs_kernel.3x.html">curs_kernel(3x)</A></STRONG>, <STRONG><A HREF="curs_slk.3x.html">curs_slk(3x)</A></STRONG>.
+       <STRONG><A HREF="ncurses.3x.html">curses(3x)</A></STRONG>,  <STRONG><A HREF="curs_kernel.3x.html">curs_kernel(3x)</A></STRONG>,   <STRONG><A HREF="curs_slk.3x.html">curs_slk(3x)</A></STRONG>,   <STRONG>curs_vari-</STRONG>
+       <STRONG><A HREF="curs_variables.3x.html">ables(3x)</A></STRONG>.
 
 
 
