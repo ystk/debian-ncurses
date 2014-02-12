@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.50 2010/01/23 16:26:46 tom Exp $
+# $Id: Makefile.in,v 1.53 2010/11/27 21:45:27 tom Exp $
 ##############################################################################
 # Copyright (c) 1998-2009,2010 Free Software Foundation, Inc.                #
 #                                                                            #
@@ -43,6 +43,7 @@
 .SUFFIXES:
 
 SHELL		= /bin/sh
+VPATH		= @srcdir@
 THIS		= Makefile
 
 x		= @EXEEXT@
@@ -75,6 +76,9 @@ ARFLAGS		= @ARFLAGS@
 AWK		= @AWK@
 LD		= @LD@
 LN_S		= @LN_S@
+
+CTAGS		= @CTAGS@
+ETAGS		= @ETAGS@
 
 CC		= @CC@
 CPP		= @CPP@
@@ -125,7 +129,7 @@ sources :	$(AUTO_SRC)
 
 $(DESTDIR)$(bindir) \
 $(DESTDIR)$(libdir) :
-	sh $(srcdir)/../mkdirs.sh $@
+	mkdir -p $@
 
 # make copies to simplify include-paths while still keeping form's include
 # file in this directory.
@@ -141,10 +145,10 @@ HEADER_DEPS = \
 	../include/eti.h
 
 tags:
-	ctags *.[ch]
+	$(CTAGS) *.[ch]
 
 @MAKE_UPPER_TAGS@TAGS:
-@MAKE_UPPER_TAGS@	etags *.[ch]
+@MAKE_UPPER_TAGS@	$(ETAGS) *.[ch]
 
 mostlyclean ::
 	-rm -f core tags TAGS *~ *.bak *.i *.ln *.atac trace

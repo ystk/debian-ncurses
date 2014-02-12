@@ -28,16 +28,17 @@
 .\"
 .\" Author: Thomas E. Dickey 1996
 .\"
-.\" $Id: wresize.3x,v 1.10 2010/02/27 21:49:29 Tim.van.der.Molen Exp $
+.\" $Id: wresize.3x,v 1.13 2010/12/04 18:40:45 tom Exp $
 .TH wresize 3X ""
 .SH NAME
-\fBwresize\fR - resize a curses window
+\fBwresize\fR \- resize a curses window
 .SH SYNOPSIS
 \fB#include <curses.h>\fR
 .sp
 \fBint wresize(WINDOW *win, int lines, int columns);\fR
 .SH DESCRIPTION
-The \fBwresize\fR function reallocates storage for an \fBncurses\fR
+This is an extension to the curses library.                                    
+It reallocates storage for an \fBncurses\fR 
 window to adjust its dimensions to the specified values.
 If either dimension is larger than the current values, the
 window's data is filled with blanks that have the current background rendition
@@ -56,9 +57,3 @@ actual screen dimensions.
 \fBresizeterm\fR(3X).
 .SH AUTHOR
 Thomas Dickey (from an equivalent function written in 1988 for BSD curses).
-.\"#
-.\"# The following sets edit modes for GNU EMACS
-.\"# Local Variables:
-.\"# mode:nroff
-.\"# fill-column:79
-.\"# End:

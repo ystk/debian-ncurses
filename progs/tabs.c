@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2008,2009 Free Software Foundation, Inc.                   *
+ * Copyright (c) 2008-2009,2010 Free Software Foundation, Inc.              *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -37,7 +37,7 @@
 #define USE_LIBTINFO
 #include <progs.priv.h>
 
-MODULE_ID("$Id: tabs.c,v 1.16 2009/10/10 16:15:37 tom Exp $")
+MODULE_ID("$Id: tabs.c,v 1.19 2010/10/23 22:26:01 tom Exp $")
 
 static void usage(void) GCC_NORETURN;
 
@@ -90,9 +90,10 @@ decode_tabs(const char *tab_list)
 		value += (ch - '0');
 	    } else if (ch == ',') {
 		result[n] = value + prior;
-		if (n > 0 && value <= result[n - 1]) {
+		if (n > 0 && result[n] <= result[n - 1]) {
 		    fprintf(stderr,
-			    "tab-stops are not in increasing order\n");
+			    "tab-stops are not in increasing order: %d %d\n",
+			    value, result[n - 1]);
 		    free(result);
 		    result = 0;
 		    break;
@@ -122,7 +123,7 @@ decode_tabs(const char *tab_list)
 	/*
 	 * Add the last value, if any.
 	 */
-	result[n++] = value;
+	result[n++] = value + prior;
 	result[n] = 0;
     }
     return result;
@@ -290,7 +291,7 @@ legal_tab_list(const char *program, const char *tab_list)
 	    int n, ch;
 	    for (n = 0; tab_list[n] != '\0'; ++n) {
 		ch = UChar(tab_list[n]);
-		if (!(isdigit(ch) || ch == ',')) {
+		if (!(isdigit(ch) || ch == ',' || ch == '+')) {
 		    fprintf(stderr,
 			    "%s: unexpected character found '%c'\n",
 			    program, ch);
@@ -448,7 +449,11 @@ main(int argc, char *argv[])
 		    mar_list = option;
 		    break;
 		default:
-		    usage();
+		    /* special case of relative stops separated by spaces? */
+		    if (option == argv[n] + 1) {
+			tab_list = add_to_tab_list(&append, argv[n]);
+		    }
+		    break;
 		}
 	    }
 	    break;
@@ -461,7 +466,6 @@ main(int argc, char *argv[])
 		}
 	    }
 	    tab_list = add_to_tab_list(&append, option);
-	    option += ((int) strlen(option)) - 1;
 	    break;
 	}
     }

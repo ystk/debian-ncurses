@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2009 Free Software Foundation, Inc.                        *
+ * Copyright (c) 2009,2010,2011 Free Software Foundation, Inc.                   *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -26,7 +26,7 @@
  * authorization.                                                           *
  ****************************************************************************/
 /*
- * $Id: test_add_wchstr.c,v 1.7 2009/09/13 00:00:28 tom Exp $
+ * $Id: test_add_wchstr.c,v 1.15 2011/01/15 18:15:11 tom Exp $
  *
  * Demonstrate the waddwchstr() and wadd_wch functions.
  * Thomas Dickey - 2009/9/12
@@ -48,13 +48,18 @@
 #define WIDE_LINEDATA
 #include <linedata.h>
 
+#undef MvAddCh
+#undef MvAddStr
+#undef MvWAddCh
+#undef MvWAddStr
+
 /* definitions to make it simpler to compare with test_addstr.c */
 #define AddNStr    add_wchnstr
 #define AddStr     add_wchstr
-#define MvAddNStr  mvadd_wchnstr
-#define MvAddStr   mvadd_wchstr
-#define MvWAddNStr mvwadd_wchnstr
-#define MvWAddStr  mvwadd_wchstr
+#define MvAddNStr  (void) mvadd_wchnstr
+#define MvAddStr   (void) mvadd_wchstr
+#define MvWAddNStr (void) mvwadd_wchnstr
+#define MvWAddStr  (void) mvwadd_wchstr
 #define WAddNStr   wadd_wchnstr
 #define WAddStr    wadd_wchstr
 
@@ -68,6 +73,7 @@ typedef enum {
 } Options;
 
 static bool m_opt = FALSE;
+static bool pass_ctls = FALSE;
 static bool w_opt = FALSE;
 static int n_opt = -1;
 
@@ -76,6 +82,7 @@ static size_t temp_length;
 
 #define TempBuffer(source_len, source_cast) \
     if (source != 0) { \
+	const char *temp; \
 	size_t need = source_len + 1; \
 	wchar_t have[2]; \
 	int n = 0; \
@@ -88,7 +95,18 @@ static size_t temp_length;
 	have[1] = 0; \
 	do { \
 	    have[0] = source_cast; \
-	    setcchar(&temp_buffer[n++], have, A_NORMAL, 0, NULL); \
+	    if (!pass_ctls \
+	     && have[0] != 0 \
+	     && have[0] < 256 \
+	     && (temp = unctrl((chtype) have[0])) != 0 \
+	     && strlen(temp) > 1) { \
+		while (*temp != '\0') { \
+		    have[0] = *temp++; \
+		    setcchar(&temp_buffer[n++], have, A_NORMAL, 0, NULL); \
+		} \
+	    } else { \
+		setcchar(&temp_buffer[n++], have, A_NORMAL, 0, NULL); \
+	    } \
 	} while (have[0] != 0); \
     } else if (temp_buffer != 0) { \
 	free(temp_buffer); \
@@ -96,6 +114,26 @@ static size_t temp_length;
 	temp_length = 0; \
     } \
     return temp_buffer;
+
+static size_t
+ChWLen(const wchar_t *source)
+{
+    size_t result = wcslen(source);
+
+    if (!pass_ctls) {
+	size_t adjust = 0;
+	size_t n;
+	const char *s;
+
+	for (n = 0; n < result; ++n) {
+	    if (source[n] < 256 && (s = unctrl((chtype) source[n])) != 0) {
+		adjust += (strlen(s) - 1);
+	    }
+	}
+	result += adjust;
+    }
+    return result;
+}
 
 static cchar_t *
 ChStr(const char *source)
@@ -106,13 +144,13 @@ ChStr(const char *source)
 static cchar_t *
 ChWStr(const wchar_t *source)
 {
-    TempBuffer(wcslen(source), *source++);
+    TempBuffer(ChWLen(source), *source++);
 }
 
 static void
 legend(WINDOW *win, int level, Options state, wchar_t *buffer, int length)
 {
-    NCURSES_CONST char *showstate;
+    const char *showstate;
 
     switch (state) {
     default:
@@ -134,7 +172,7 @@ legend(WINDOW *win, int level, Options state, wchar_t *buffer, int length)
     wprintw(win,
 	    "The Strings/Chars displays should match.  Enter any characters, except:\n");
     wprintw(win,
-	    "down-arrow or ^N to repeat on next line, 'w' for inner window, 'q' to exit.\n");
+	    "down-arrow or ^N to repeat on next line, ^W for inner window, ESC to exit.\n");
     wclrtoeol(win);
     wprintw(win, "Level %d,%s added %d characters <", level,
 	    showstate, length);
@@ -184,7 +222,7 @@ ConvertCh(chtype source, cchar_t *target)
 {
     wchar_t tmp_wchar[2];
 
-    tmp_wchar[0] = source;
+    tmp_wchar[0] = (wchar_t) source;
     tmp_wchar[1] = 0;
     if (setcchar(target, tmp_wchar, A_NORMAL, 0, (void *) 0) == ERR) {
 	beep();
@@ -296,14 +334,14 @@ test_add_wchstr(int level)
     keypad(work, TRUE);
 
     for (col = margin + 1; col < COLS; col += MY_TABSIZE)
-	mvwvline(work, row, col, '.', limit - 2);
+	MvWVLine(work, row, col, '.', limit - 2);
 
-    mvwvline(work, row, margin, ACS_VLINE, limit - 2);
-    mvwvline(work, row, margin + 1, ACS_VLINE, limit - 2);
+    MvWVLine(work, row, margin, ACS_VLINE, limit - 2);
+    MvWVLine(work, row, margin + 1, ACS_VLINE, limit - 2);
     limit /= 2;
 
-    mvwadd_wchstr(work, 1, 2, ChStr("String"));
-    mvwadd_wchstr(work, limit + 1, 2, ChStr("Chars"));
+    (void) mvwadd_wchstr(work, 1, 2, ChStr("String"));
+    (void) mvwadd_wchstr(work, limit + 1, 2, ChStr("Chars"));
     wnoutrefresh(work);
 
     buffer[length = 0] = '\0';
@@ -451,19 +489,19 @@ test_add_wchstr(int level)
 	    switch (option) {
 	    case oDefault:
 		if (move(limit + row, col) != ERR) {
-		    AddCh(ch);
+		    AddCh((chtype) ch);
 		}
 		break;
 	    case oMove:
-		MvAddCh(limit + row, col, ch);
+		MvAddCh(limit + row, col, (chtype) ch);
 		break;
 	    case oWindow:
 		if (wmove(work, limit + row, col) != ERR) {
-		    WAddCh(work, ch);
+		    WAddCh(work, (chtype) ch);
 		}
 		break;
 	    case oMoveWindow:
-		MvWAddCh(work, limit + row, col, ch);
+		MvWAddCh(work, limit + row, col, (chtype) ch);
 		break;
 	    }
 
@@ -494,6 +532,7 @@ usage(void)
 	,"  -f FILE read data from given file"
 	,"  -n NUM  limit string-adds to NUM bytes on ^N replay"
 	,"  -m      perform wmove/move separately from add-functions"
+	,"  -p      pass-thru control characters without using unctrl()"
 	,"  -w      use window-parameter even when stdscr would be implied"
     };
     unsigned n;
@@ -509,7 +548,7 @@ main(int argc GCC_UNUSED, char *argv[]GCC_UNUSED)
 
     setlocale(LC_ALL, "");
 
-    while ((ch = getopt(argc, argv, "f:mn:w")) != -1) {
+    while ((ch = getopt(argc, argv, "f:mn:pw")) != -1) {
 	switch (ch) {
 	case 'f':
 	    init_linedata(optarg);
@@ -521,6 +560,9 @@ main(int argc GCC_UNUSED, char *argv[]GCC_UNUSED)
 	    n_opt = atoi(optarg);
 	    if (n_opt == 0)
 		n_opt = -1;
+	    break;
+	case 'p':
+	    pass_ctls = TRUE;
 	    break;
 	case 'w':
 	    w_opt = TRUE;

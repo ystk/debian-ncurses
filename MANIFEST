@@ -6,6 +6,7 @@
 ./Ada95/aclocal.m4
 ./Ada95/configure
 ./Ada95/configure.in
+./Ada95/doc/Makefile.in
 ./Ada95/gen/Makefile.in
 ./Ada95/gen/adacurses-config.in
 ./Ada95/gen/gen.c
@@ -31,6 +32,16 @@
 ./Ada95/include/ncurses_cfg.hin
 ./Ada95/include/ncurses_defs
 ./Ada95/make-tar.sh
+./Ada95/mk-1st.awk
+./Ada95/package/AdaCurses-doc.spec
+./Ada95/package/AdaCurses.spec
+./Ada95/package/debian/compat
+./Ada95/package/debian/control
+./Ada95/package/debian/copyright
+./Ada95/package/debian/docs
+./Ada95/package/debian/rules
+./Ada95/package/debian/source/format
+./Ada95/package/debian/watch
 ./Ada95/samples/Makefile.in
 ./Ada95/samples/README
 ./Ada95/samples/explain.txt
@@ -117,6 +128,11 @@
 ./Ada95/samples/tour.adb
 ./Ada95/samples/tour.ads
 ./Ada95/src/Makefile.in
+./Ada95/src/c_varargs_to_ada.c
+./Ada95/src/c_varargs_to_ada.h
+./Ada95/src/library.gpr
+./Ada95/src/modules
+./Ada95/src/ncurses_compat.c
 ./Ada95/src/terminal_interface-curses-aux.adb
 ./Ada95/src/terminal_interface-curses-forms-field_types-alpha.adb
 ./Ada95/src/terminal_interface-curses-forms-field_types-alpha.ads
@@ -320,6 +336,7 @@
 ./doc/html/announce.html
 ./doc/html/hackguide.html
 ./doc/html/index.html
+./doc/html/man/adacurses-config.1.html
 ./doc/html/man/captoinfo.1m.html
 ./doc/html/man/clear.1.html
 ./doc/html/man/curs_add_wch.3x.html
@@ -373,6 +390,7 @@
 ./doc/html/man/curs_scr_dump.3x.html
 ./doc/html/man/curs_scroll.3x.html
 ./doc/html/man/curs_slk.3x.html
+./doc/html/man/curs_sp_funcs.3x.html
 ./doc/html/man/curs_termattrs.3x.html
 ./doc/html/man/curs_termcap.3x.html
 ./doc/html/man/curs_terminfo.3x.html
@@ -380,6 +398,7 @@
 ./doc/html/man/curs_touch.3x.html
 ./doc/html/man/curs_trace.3x.html
 ./doc/html/man/curs_util.3x.html
+./doc/html/man/curs_variables.3x.html
 ./doc/html/man/curs_window.3x.html
 ./doc/html/man/default_colors.3x.html
 ./doc/html/man/define_key.3x.html
@@ -405,6 +424,7 @@
 ./doc/html/man/form_post.3x.html
 ./doc/html/man/form_requestname.3x.html
 ./doc/html/man/form_userptr.3x.html
+./doc/html/man/form_variables.3x.html
 ./doc/html/man/form_win.3x.html
 ./doc/html/man/index.html
 ./doc/html/man/infocmp.1m.html
@@ -437,11 +457,13 @@
 ./doc/html/man/mitem_value.3x.html
 ./doc/html/man/mitem_visible.3x.html
 ./doc/html/man/ncurses.3x.html
+./doc/html/man/ncurses5-config.1.html
 ./doc/html/man/panel.3x.html
 ./doc/html/man/resizeterm.3x.html
 ./doc/html/man/tabs.1.html
 ./doc/html/man/term.5.html
 ./doc/html/man/term.7.html
+./doc/html/man/term_variables.3x.html
 ./doc/html/man/terminfo.5.html
 ./doc/html/man/tic.1m.html
 ./doc/html/man/toe.1m.html
@@ -590,6 +612,7 @@
 ./man/curs_scr_dump.3x
 ./man/curs_scroll.3x
 ./man/curs_slk.3x
+./man/curs_sp_funcs.3x
 ./man/curs_termattrs.3x
 ./man/curs_termcap.3x
 ./man/curs_terminfo.3x
@@ -597,6 +620,7 @@
 ./man/curs_touch.3x
 ./man/curs_trace.3x
 ./man/curs_util.3x
+./man/curs_variables.3x
 ./man/curs_window.3x
 ./man/default_colors.3x
 ./man/define_key.3x
@@ -622,6 +646,7 @@
 ./man/form_post.3x
 ./man/form_requestname.3x
 ./man/form_userptr.3x
+./man/form_variables.3x
 ./man/form_win.3x
 ./man/infocmp.1m
 ./man/infotocap.1m
@@ -661,6 +686,7 @@
 ./man/tabs.1
 ./man/term.5
 ./man/term.7
+./man/term_variables.3x
 ./man/terminfo.head
 ./man/terminfo.tail
 ./man/tic.1m
@@ -717,12 +743,10 @@
 ./misc/form.ref
 ./misc/gen-pkgconfig.in
 ./misc/gen_edit.sh
-./misc/jpf-indent
 ./misc/makedef.cmd
 ./misc/makellib
 ./misc/menu.def
 ./misc/menu.ref
-./misc/ncu-indent
 ./misc/ncurses-config.in
 ./misc/ncurses.def
 ./misc/ncurses.ref
@@ -740,9 +764,8 @@
 ./mk-0th.awk
 ./mk-1st.awk
 ./mk-2nd.awk
-./mk-dlls.sh
+./mk-dlls.sh.in
 ./mk-hdr.awk
-./mkdirs.sh
 ./ncurses/Makefile.in
 ./ncurses/README
 ./ncurses/README.IZ
@@ -837,6 +860,7 @@
 ./ncurses/base/version.c
 ./ncurses/base/vsscanf.c
 ./ncurses/base/wresize.c
+./ncurses/build.priv.h
 ./ncurses/curses.priv.h
 ./ncurses/fifo_defs.h
 ./ncurses/llib-lncurses
@@ -922,6 +946,7 @@
 ./ncurses/tty/tty_display.h
 ./ncurses/tty/tty_input.h
 ./ncurses/tty/tty_update.c
+./ncurses/wcwidth.h
 ./ncurses/widechar/charable.c
 ./ncurses/widechar/lib_add_wch.c
 ./ncurses/widechar/lib_box_set.c
@@ -943,6 +968,7 @@
 ./ncurses/widechar/lib_wacs.c
 ./ncurses/widechar/lib_wunctrl.c
 ./ncurses/win32con/gettimeofday.c
+./ncurses/win32con/wcwidth.c
 ./ncurses/win32con/win_driver.c
 ./panel/Makefile.in
 ./panel/headers
@@ -984,7 +1010,6 @@
 ./progs/tput.c
 ./progs/transform.c
 ./progs/tset.c
-./tar-copy.sh
 ./test/Makefile.in
 ./test/README
 ./test/aclocal.m4
@@ -1041,6 +1066,14 @@
 ./test/ncurses.c
 ./test/ncurses_tst.hin
 ./test/newdemo.c
+./test/package/debian/compat
+./test/package/debian/control
+./test/package/debian/copyright
+./test/package/debian/docs
+./test/package/debian/rules
+./test/package/debian/source/format
+./test/package/debian/watch
+./test/package/ncurses-examples.spec
 ./test/programs
 ./test/railroad.c
 ./test/rain.c

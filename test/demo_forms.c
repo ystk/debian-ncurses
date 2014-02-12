@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2003-2008,2009 Free Software Foundation, Inc.              *
+ * Copyright (c) 2003-2010,2011 Free Software Foundation, Inc.              *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -26,7 +26,7 @@
  * authorization.                                                           *
  ****************************************************************************/
 /*
- * $Id: demo_forms.c,v 1.33 2009/08/29 18:47:26 tom Exp $
+ * $Id: demo_forms.c,v 1.38 2011/01/15 18:15:11 tom Exp $
  *
  * Demonstrate a variety of functions from the form library.
  * Thomas Dickey - 2003/4/26
@@ -83,7 +83,7 @@ make_label(int frow, int fcol, NCURSES_CONST char *label)
 
     if (f) {
 	set_field_buffer(f, 0, label);
-	set_field_opts(f, (int) (field_opts(f) & ~O_ACTIVE));
+	set_field_opts(f, (int) ((unsigned) field_opts(f) & ~O_ACTIVE));
     }
     return (f);
 }
@@ -175,7 +175,7 @@ erase_form(FORM * f)
 static void
 show_insert_mode(bool insert_mode)
 {
-    mvaddstr(5, 57, (insert_mode
+    MvAddStr(5, 57, (insert_mode
 		     ? "form_status: insert "
 		     : "form_status: overlay"));
 }
@@ -216,7 +216,7 @@ my_form_driver(FORM * form, int c)
     case MY_EDT_MODE:
 	if ((field = current_field(form)) != 0) {
 	    set_current_field(form, another_field(form, field));
-	    if (field_opts(field) & O_EDIT) {
+	    if ((unsigned) field_opts(field) & O_EDIT) {
 		field_opts_off(field, O_EDIT);
 		set_field_status(field, 0);
 	    } else {
@@ -254,12 +254,14 @@ show_current_field(WINDOW *win, FORM * form)
     char *buffer;
     int nbuf;
     int field_rows, field_cols, field_max;
+    int currow, curcol;
 
     if (has_colors()) {
 	wbkgd(win, COLOR_PAIR(1));
     }
     werase(win);
-    wprintw(win, "Cursor: %d,%d", form->currow, form->curcol);
+    form_getyx(form, currow, curcol);
+    wprintw(win, "Cursor: %d,%d", currow, curcol);
     if (data_ahead(form))
 	waddstr(win, " ahead");
     if (data_behind(form))
@@ -292,7 +294,7 @@ show_current_field(WINDOW *win, FORM * form)
 		waddstr(win, "other");
 	}
 
-	if (field_opts(field) & O_EDIT)
+	if ((unsigned) field_opts(field) & O_EDIT)
 	    waddstr(win, " editable");
 	else
 	    waddstr(win, " readonly");
@@ -351,7 +353,7 @@ demo_forms(void)
 
     help_edit_field();
 
-    mvaddstr(4, 57, "Forms Entry Test");
+    MvAddStr(4, 57, "Forms Entry Test");
     show_insert_mode(TRUE);
 
     refresh();
@@ -423,7 +425,7 @@ demo_forms(void)
 	set_field_buffer(f[n - 1], 1, "Hello\nWorld!");
     }
 
-    f[n++] = (FIELD *) 0;
+    f[n] = (FIELD *) 0;
 
     if ((form = new_form(f)) != 0) {
 

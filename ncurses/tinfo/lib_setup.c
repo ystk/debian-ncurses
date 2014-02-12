@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 1998-2009,2010 Free Software Foundation, Inc.              *
+ * Copyright (c) 1998-2010,2011 Free Software Foundation, Inc.              *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -51,7 +51,7 @@
 #include <locale.h>
 #endif
 
-MODULE_ID("$Id: lib_setup.c,v 1.127 2010/01/23 17:57:43 tom Exp $")
+MODULE_ID("$Id: lib_setup.c,v 1.135 2011/02/06 01:04:21 tom Exp $")
 
 /****************************************************************************
  *
@@ -278,25 +278,14 @@ _nc_get_screensize(SCREEN *sp,
     /* figure out the size of the screen */
     T(("screen size: terminfo lines = %d columns = %d", lines, columns));
 
-    if (!_nc_prescreen.use_env) {
-	*linep = (int) lines;
-	*colp = (int) columns;
-    } else {			/* usually want to query LINES and COLUMNS from environment */
+    *linep = (int) lines;
+    *colp = (int) columns;
+
+    if (_nc_prescreen.use_env) {
 	int value;
 
-	*linep = *colp = 0;
-
-	/* first, look for environment variables */
-	if ((value = _nc_getenv_num("LINES")) > 0) {
-	    *linep = value;
-	}
-	if ((value = _nc_getenv_num("COLUMNS")) > 0) {
-	    *colp = value;
-	}
-	T(("screen size: environment LINES = %d COLUMNS = %d", *linep, *colp));
-
 #ifdef __EMX__
-	if (*linep <= 0 || *colp <= 0) {
+	{
 	    int screendata[2];
 	    _scrsize(screendata);
 	    *colp = screendata[0];
@@ -306,32 +295,40 @@ _nc_get_screensize(SCREEN *sp,
 	}
 #endif
 #if HAVE_SIZECHANGE
-	/* if that didn't work, maybe we can try asking the OS */
-	if (*linep <= 0 || *colp <= 0) {
-	    if (isatty(cur_term->Filedes)) {
-		STRUCT_WINSIZE size;
+	/* try asking the OS */
+	if (isatty(cur_term->Filedes)) {
+	    STRUCT_WINSIZE size;
 
-		errno = 0;
-		do {
-		    if (ioctl(cur_term->Filedes, IOCTL_WINSIZE, &size) < 0
-			&& errno != EINTR)
-			goto failure;
-		} while
-		    (errno == EINTR);
-
-		/*
-		 * Solaris lets users override either dimension with an
-		 * environment variable.
-		 */
-		if (*linep <= 0)
-		    *linep = (sp != 0 && sp->_filtered) ? 1 : WINSIZE_ROWS(size);
-		if (*colp <= 0)
+	    errno = 0;
+	    do {
+		if (ioctl(cur_term->Filedes, IOCTL_WINSIZE, &size) >= 0) {
+		    *linep = ((sp != 0 && sp->_filtered)
+			      ? 1
+			      : WINSIZE_ROWS(size));
 		    *colp = WINSIZE_COLS(size);
-	    }
-	    /* FALLTHRU */
-	  failure:;
+		    T(("SYS screen size: environment LINES = %d COLUMNS = %d",
+		       *linep, *colp));
+		    break;
+		}
+	    } while
+		(errno == EINTR);
 	}
 #endif /* HAVE_SIZECHANGE */
+
+	/*
+	 * Finally, look for environment variables.
+	 *
+	 * Solaris lets users override either dimension with an environment
+	 * variable.
+	 */
+	if ((value = _nc_getenv_num("LINES")) > 0) {
+	    *linep = value;
+	    T(("screen size: environment LINES = %d", *linep));
+	}
+	if ((value = _nc_getenv_num("COLUMNS")) > 0) {
+	    *colp = value;
+	    T(("screen size: environment COLUMNS = %d", *colp));
+	}
 
 	/* if we can't get dynamic info about the size, use static */
 	if (*linep <= 0) {
@@ -433,14 +430,13 @@ _nc_update_screensize(SCREEN *sp)
 					    exit(EXIT_FAILURE);\
 					}
 
-#ifndef USE_TERM_DRIVER
 #if USE_DATABASE || USE_TERMCAP
 /*
  * Return 1 if entry found, 0 if not found, -1 if database not accessible,
  * just like tgetent().
  */
-static int
-grab_entry(const char *const tn, TERMTYPE *const tp)
+int
+_nc_setup_tinfo(const char *const tn, TERMTYPE *const tp)
 {
     char filename[PATH_MAX];
     int status = _nc_read_entry(tn, filename, tp);
@@ -465,7 +461,6 @@ grab_entry(const char *const tn, TERMTYPE *const tp)
     return (status);
 }
 #endif
-#endif /* !USE_TERM_DRIVER */
 
 /*
 **	Take the real command character out of the CC environment variable
@@ -551,25 +546,31 @@ _nc_unicode_locale(void)
 NCURSES_EXPORT(int)
 _nc_locale_breaks_acs(TERMINAL * termp)
 {
+    const char *env_name = "NCURSES_NO_UTF8_ACS";
     char *env;
+    int value;
+    int result = 0;
 
-    if ((env = getenv("NCURSES_NO_UTF8_ACS")) != 0) {
-	return atoi(env);
+    if ((env = getenv(env_name)) != 0) {
+	result = _nc_getenv_num(env_name);
+    } else if ((value = tigetnum("U8")) >= 0) {
+	result = value;		/* use extension feature */
     } else if ((env = getenv("TERM")) != 0) {
-	if (strstr(env, "linux"))
-	    return 1;		/* always broken */
-	if (strstr(env, "screen") != 0
-	    && ((env = getenv("TERMCAP")) != 0
-		&& strstr(env, "screen") != 0)
-	    && strstr(env, "hhII00") != 0) {
+	if (strstr(env, "linux")) {
+	    result = 1;		/* always broken */
+	} else if (strstr(env, "screen") != 0
+		   && ((env = getenv("TERMCAP")) != 0
+		       && strstr(env, "screen") != 0)
+		   && strstr(env, "hhII00") != 0) {
 	    if (CONTROL_N(enter_alt_charset_mode) ||
 		CONTROL_O(enter_alt_charset_mode) ||
 		CONTROL_N(set_attributes) ||
-		CONTROL_O(set_attributes))
-		return 1;
+		CONTROL_O(set_attributes)) {
+		result = 1;
+	    }
 	}
     }
-    return 0;
+    return result;
 }
 
 NCURSES_EXPORT(int)
@@ -592,7 +593,7 @@ TINFO_SETUP_TERM(TERMINAL ** tp,
 
 #ifdef USE_TERM_DRIVER
     T((T_CALLED("_nc_setupterm_ex(%p,%s,%d,%p)"),
-       tp, _nc_visbuf(tname), Filedes, errret));
+       (void *) tp, _nc_visbuf(tname), Filedes, (void *) errret));
 
     if (tp == 0) {
 	ret_error0(TGETENT_ERR,
@@ -661,10 +662,11 @@ TINFO_SETUP_TERM(TERMINAL ** tp,
 		       "Not enough memory to create terminal structure.\n");
 	}
 #ifdef USE_TERM_DRIVER
+	INIT_TERM_DRIVER();
 	TCB = (TERMINAL_CONTROL_BLOCK *) termp;
 	code = _nc_globals.term_driver(TCB, tname, errret);
 	if (code == OK) {
-	    termp->Filedes = Filedes;
+	    termp->Filedes = (short) Filedes;
 	    termp->_termname = strdup(tname);
 	} else {
 	    ret_error0(TGETENT_ERR,
@@ -672,7 +674,7 @@ TINFO_SETUP_TERM(TERMINAL ** tp,
 	}
 #else
 #if USE_DATABASE || USE_TERMCAP
-	status = grab_entry(tname, &termp->type);
+	status = _nc_setup_tinfo(tname, &termp->type);
 #else
 	status = TGETENT_NO;
 #endif
@@ -700,7 +702,7 @@ TINFO_SETUP_TERM(TERMINAL ** tp,
 	ttytype[NAMESIZE - 1] = '\0';
 #endif
 
-	termp->Filedes = Filedes;
+	termp->Filedes = (short) Filedes;
 	termp->_termname = strdup(tname);
 
 	set_curterm(termp);

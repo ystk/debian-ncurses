@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 1998-2008,2009 Free Software Foundation, Inc.              *
+ * Copyright (c) 1998-2009,2010 Free Software Foundation, Inc.              *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -82,7 +82,7 @@
 
 #include <ctype.h>
 
-MODULE_ID("$Id: tty_update.c,v 1.262 2009/10/24 23:21:31 tom Exp $")
+MODULE_ID("$Id: tty_update.c,v 1.264 2010/12/19 01:21:02 tom Exp $")
 
 /*
  * This define controls the line-breakout optimization.  Every once in a
@@ -497,7 +497,9 @@ can_clear_with(NCURSES_SP_DCLx ARG_CH_T ch)
 	    return FALSE;
 	if ((pair = GetPair(CHDEREF(ch))) != 0) {
 	    short fg, bg;
-	    NCURSES_SP_NAME(pair_content) (NCURSES_SP_ARGx pair, &fg, &bg);
+	    NCURSES_SP_NAME(pair_content) (NCURSES_SP_ARGx
+					   (short) pair,
+					   &fg, &bg);
 	    if (fg != C_MASK || bg != C_MASK)
 		return FALSE;
 	}
@@ -1078,24 +1080,24 @@ ClrToEOL(NCURSES_SP_DCLx NCURSES_CH_T blank, bool needclear)
 {
     int j;
 
-    if (SP_PARM != 0 && CurScreen(SP_PARM) != 0
-	&& SP_PARM->_cursrow >= 0) {
-	for (j = SP_PARM->_curscol; j < screen_columns(SP_PARM); j++) {
-	    if (j >= 0) {
-		NCURSES_CH_T *cp =
-		&(CurScreen(SP_PARM)->_line[SP_PARM->_cursrow].text[j]);
+    if (SP_PARM != 0) {
+	if (CurScreen(SP_PARM) != 0
+	    && SP_PARM->_cursrow >= 0) {
+	    for (j = SP_PARM->_curscol; j < screen_columns(SP_PARM); j++) {
+		if (j >= 0) {
+		    NCURSES_CH_T *cp =
+		    &(CurScreen(SP_PARM)->_line[SP_PARM->_cursrow].text[j]);
 
-		if (!CharEq(*cp, blank)) {
-		    *cp = blank;
-		    needclear = TRUE;
+		    if (!CharEq(*cp, blank)) {
+			*cp = blank;
+			needclear = TRUE;
+		    }
 		}
 	    }
 	}
-    } else {
-	needclear = TRUE;
     }
 
-    if (needclear) {
+    if (needclear && (SP_PARM != 0)) {
 	UpdateAttrs(SP_PARM, blank);
 	TPUTS_TRACE("clr_eol");
 	if (clr_eol && SP_PARM->_el_cost <= (screen_columns(SP_PARM) - SP_PARM->_curscol)) {
@@ -1413,7 +1415,7 @@ TransformLine(NCURSES_SP_DCLx int const lineno)
 			 nLastChar);
 		memcpy(oldLine + firstChar,
 		       newLine + firstChar,
-		       (nLastChar - firstChar + 1) * sizeof(NCURSES_CH_T));
+		       (unsigned) (nLastChar - firstChar + 1) * sizeof(NCURSES_CH_T));
 	    }
 	    TR(TRACE_UPDATE, (T_RETURN("")));
 	    return;
@@ -1535,7 +1537,7 @@ TransformLine(NCURSES_SP_DCLx int const lineno)
     if (screen_columns(SP_PARM) > firstChar)
 	memcpy(oldLine + firstChar,
 	       newLine + firstChar,
-	       (screen_columns(SP_PARM) - firstChar) * sizeof(NCURSES_CH_T));
+	       (unsigned) (screen_columns(SP_PARM) - firstChar) * sizeof(NCURSES_CH_T));
     TR(TRACE_UPDATE, (T_RETURN("")));
     return;
 }
@@ -1559,7 +1561,7 @@ ClearScreen(NCURSES_SP_DCLx NCURSES_CH_T blank)
     if (SP_PARM->_coloron
 	&& !SP_PARM->_default_color) {
 	NCURSES_SP_NAME(_nc_do_color) (NCURSES_SP_ARGx
-				       GET_SCREEN_PAIR(SP_PARM),
+				       (short) GET_SCREEN_PAIR(SP_PARM),
 				       0,
 				       FALSE,
 				       NCURSES_SP_NAME(_nc_outch));
@@ -2064,7 +2066,10 @@ NCURSES_SP_NAME(_nc_scrolln) (NCURSES_SP_DCLx
     if (res == ERR)
 	return (ERR);
 
-    _nc_scroll_window(CurScreen(SP_PARM), n, top, bot, blank);
+    _nc_scroll_window(CurScreen(SP_PARM), n,
+		      (NCURSES_SIZE_T) top,
+		      (NCURSES_SIZE_T) bot,
+		      blank);
 
     /* shift hash values too - they can be reused */
     NCURSES_SP_NAME(_nc_scroll_oldhash) (NCURSES_SP_ARGx n, top, bot);
@@ -2099,7 +2104,8 @@ NCURSES_SP_NAME(_nc_screen_resume) (NCURSES_SP_DCL0)
 	SP_PARM->_color_defs = -(SP_PARM->_color_defs);
 	for (n = 0; n < SP_PARM->_color_defs; ++n) {
 	    if (SP_PARM->_color_table[n].init) {
-		NCURSES_SP_NAME(init_color) (NCURSES_SP_ARGx n,
+		NCURSES_SP_NAME(init_color) (NCURSES_SP_ARGx
+					     (short) n,
 					     SP_PARM->_color_table[n].r,
 					     SP_PARM->_color_table[n].g,
 					     SP_PARM->_color_table[n].b);

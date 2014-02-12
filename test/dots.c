@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 1999-2008,2009 Free Software Foundation, Inc.              *
+ * Copyright (c) 1999-2009,2010 Free Software Foundation, Inc.              *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -29,7 +29,7 @@
 /*
  * Author: Thomas E. Dickey <dickey@clark.net> 1999
  *
- * $Id: dots.c,v 1.19 2009/10/10 16:22:24 tom Exp $
+ * $Id: dots.c,v 1.22 2010/11/14 01:00:02 tom Exp $
  *
  * A simple demo of the terminfo interface.
  */
@@ -58,7 +58,7 @@ outc(TPUTS_ARG c)
     } else {
 	rc = putc(c, stdout);
     }
-    return 0;
+    return rc;
 }
 
 static bool
@@ -82,7 +82,7 @@ cleanup(void)
 
     printf("\n\n%ld total chars, rate %.2f/sec\n",
 	   total_chars,
-	   ((double) (total_chars) / (time((time_t *) 0) - started)));
+	   ((double) (total_chars) / (double) (time((time_t *) 0) - started)));
 }
 
 static void
@@ -91,21 +91,20 @@ onsig(int n GCC_UNUSED)
     interrupted = TRUE;
 }
 
-static float
+static double
 ranf(void)
 {
     long r = (rand() & 077777);
-    return ((float) r / 32768.);
+    return ((double) r / 32768.);
 }
 
 int
-main(
-	int argc GCC_UNUSED,
-	char *argv[]GCC_UNUSED)
+main(int argc GCC_UNUSED,
+     char *argv[]GCC_UNUSED)
 {
     int x, y, z, p;
-    float r;
-    float c;
+    double r;
+    double c;
 
     CATCHALL(onsig);
 
@@ -120,8 +119,8 @@ main(
 	    max_colors = -1;
     }
 
-    r = (float) (lines - 4);
-    c = (float) (columns - 4);
+    r = (double) (lines - 4);
+    c = (double) (columns - 4);
     started = time((time_t *) 0);
 
     while (!interrupted) {
