@@ -9,7 +9,7 @@ export LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS)
 
 # These are important since this is a library package
 soname=5
-sodepver = (>= 5.7+20100313)
+sodepver = (>= 5.9+20140712)
 
 # Name our packages
 package-base=ncurses-base
@@ -55,6 +55,7 @@ DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_HOST_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_HOST_GNU_SYSTEM ?= $(shell dpkg-architecture -qDEB_HOST_GNU_SYSTEM)
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
+DEB_HOST_ARCH_OS ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 autogen-files := debian/libncurses5-dev.links debian/libtinfo-dev.links \
@@ -97,21 +98,27 @@ lib32 = /lib32
 usr_lib32 = /usr/lib32
 endif
 
-ifneq ($(findstring linux,$(DEB_HOST_GNU_SYSTEM)),)
-with_gpm = --with-gpm
+ifeq ($(DEB_HOST_ARCH_OS),linux)
+with_mouse = --with-gpm
+else
+ifeq ($(DEB_HOST_ARCH_OS),kfreebsd)
+with_mouse = --without-sysmouse
+endif
 endif
 
 CONFARGS =	--prefix=/usr \
+		--build=$(DEB_BUILD_GNU_TYPE) \
 		--with-shared \
 		--mandir=/usr/share/man \
 		--without-profile --without-debug \
 		--disable-rpath --enable-echo \
 		--enable-const \
 		--enable-pc-files \
+		--with-pkg-config-libdir=/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig \
 		--without-ada \
 		--without-tests \
 		--without-progs \
-		$(with_gpm) \
+		$(with_mouse) \
 		--enable-symlinks \
 		--disable-lp64 \
 		--with-chtype='long' \
@@ -120,16 +127,18 @@ CONFARGS =	--prefix=/usr \
 		--with-default-terminfo-dir=/etc/terminfo \
 		--with-terminfo-dirs="/etc/terminfo:/lib/terminfo:/usr/share/terminfo" \
 		--with-ticlib=tic \
-		--with-termlib=tinfo
+		--with-termlib=tinfo \
+		--with-xterm-kbs=del
 
 CONFARGS-TEST =	--prefix=/usr \
+		--build=$(DEB_BUILD_GNU_TYPE) \
 		--bindir=/usr/lib/ncurses/examples \
 		--with-ncursesw \
 		--with-curses-dir=$(wobjdir)
 
 ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
 CONFARGS += --with-build-cc=gcc --host=$(DEB_HOST_GNU_TYPE)
-CONFARGS-TEST += --with-build-cc=gcc --host=$(DEB_HOST_GNU_TYPE)
+CONFARGS-TEST += --host=$(DEB_HOST_GNU_TYPE)
 endif
 
 # Files for /lib/terminfo.
@@ -145,13 +154,22 @@ libterminfofiles=a/ansi c/cons25 c/cons25-debian c/cygwin d/dumb h/hurd l/linux 
 # Blacklist terminfo entries shipped by other Debian packages so that we do
 # not begin shipping them by accident.
 badterminfo = 5/5250 f/fbterm i/iterm i/iterm-am i/iterm-color j/jfbterm \
-	k/kon k/kon2 l/linux-5250 s/st s/st-256color s/stterm s/stterm-256color
+	k/kon k/kon2 l/linux-5250 s/stterm s/stterm-256color
 
-# The ncurses configure test won't work when cross compiling (e.g. for
-# 64 bit libraries), so force the libgpm soname to the correct value.
+ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+# Force necessary configure checks which do not work when
+# cross compiling; all Debian platforms return unsigned char
+# and working poll for these configure checks.
+export cf_cv_type_of_bool=unsigned char
+export cf_cv_working_poll=yes
 export cf_cv_gpm_soname=libgpm.so.2
+endif
 
-$(objdir)/config.status:
+config.guess-stamp:
+	dh_autotools-dev_updateconfig
+	touch $@
+
+$(objdir)/config.status: config.guess-stamp
 	test -d $(objdir) || mkdir $(objdir)
 	cd $(objdir) && CFLAGS="$(CFLAGS)" $(srcdir)/configure \
 		$(CONFARGS) \
@@ -159,7 +177,7 @@ $(objdir)/config.status:
 		--with-install-prefix=$(fulltempdir) \
 		--enable-overwrite --libdir=/usr/lib/$(DEB_HOST_MULTIARCH)
 
-$(objdir-static)/config.status:
+$(objdir-static)/config.status: config.guess-stamp
 	test -d $(objdir-static) || mkdir $(objdir-static)
 	cd $(objdir-static) && CFLAGS="$(CFLAGS)" $(srcdir)/configure \
 		$(CONFARGS) \
@@ -168,25 +186,21 @@ $(objdir-static)/config.status:
 		--with-install-prefix=$(fulltempdir) \
 		--enable-overwrite --libdir=/usr/lib/$(DEB_HOST_MULTIARCH)
 
-$(objdir-32)/config.status:
+$(objdir-32)/config.status: config.guess-stamp
 	test -d $(objdir-32) || mkdir $(objdir-32)
 
-	# Force necessary configure checks which do not work when
-	# cross compiling; all Debian platforms return unsigned char
-	# and working poll for these configure checks.
 	cf_cv_type_of_bool='unsigned char'; export cf_cv_type_of_bool; \
 	cf_cv_working_poll=yes; export cf_cv_working_poll; \
 	cd $(objdir-32) && CFLAGS="$(CFLAGS)" CC="gcc -m32" \
 		BUILD_CC="gcc" CXX="g++ -m32" \
 		$(srcdir)/configure \
 		$(CONFARGS) \
-		--build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(build_32_target) \
 		--without-gpm \
 		--with-install-prefix=$(fulltempdir) \
 		--enable-overwrite --libdir=$(usr_lib32)
 
-$(objdir-64)/config.status:
+$(objdir-64)/config.status: config.guess-stamp
 	test -d $(objdir-64) || mkdir $(objdir-64)
 
 	cf_cv_type_of_bool='unsigned char'; export cf_cv_type_of_bool; \
@@ -195,13 +209,12 @@ $(objdir-64)/config.status:
 		BUILD_CC="gcc" CXX="g++ -m64" \
 		$(srcdir)/configure \
 		$(CONFARGS) \
-		--build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(build_64_target) \
 		--without-gpm \
 		--with-install-prefix=$(fulltempdir) \
 		--enable-overwrite --libdir=/usr/lib64
 
-$(objdir-debug)/config.status:
+$(objdir-debug)/config.status: config.guess-stamp
 	test -d $(objdir-debug) || mkdir $(objdir-debug)
 	cd $(objdir-debug) && \
 		CFLAGS="$(CFLAGS) -DTRACE" $(srcdir)/configure \
@@ -209,7 +222,7 @@ $(objdir-debug)/config.status:
 		--with-install-prefix=$(fulltempdir) \
 		--enable-overwrite --libdir=/usr/lib/$(DEB_HOST_MULTIARCH)
 
-$(wobjdir)/config.status:
+$(wobjdir)/config.status: config.guess-stamp
 	test -d $(wobjdir) || mkdir $(wobjdir)
 	cd $(wobjdir) && CFLAGS="$(CFLAGS)" $(srcdir)/configure \
 		$(CONFARGS) \
@@ -217,7 +230,7 @@ $(wobjdir)/config.status:
 		--disable-overwrite --enable-widec \
 		--libdir=/usr/lib/$(DEB_HOST_MULTIARCH)
 
-$(wobjdir-static)/config.status:
+$(wobjdir-static)/config.status: config.guess-stamp
 	test -d $(wobjdir-static) || mkdir $(wobjdir-static)
 	cd $(wobjdir-static) && CFLAGS="$(CFLAGS)" $(srcdir)/configure \
 		$(CONFARGS) \
@@ -227,7 +240,7 @@ $(wobjdir-static)/config.status:
 		--disable-overwrite --enable-widec \
 		--libdir=/usr/lib/$(DEB_HOST_MULTIARCH)
 
-$(wobjdir-debug)/config.status:
+$(wobjdir-debug)/config.status: config.guess-stamp
 	test -d $(wobjdir-debug) || mkdir $(wobjdir-debug)
 	cd $(wobjdir-debug) && \
 		CFLAGS="$(CFLAGS) -DTRACE" $(srcdir)/configure \
@@ -236,7 +249,7 @@ $(wobjdir-debug)/config.status:
 		--disable-overwrite --enable-widec \
 		--libdir=/usr/lib/$(DEB_HOST_MULTIARCH)
 
-$(wobjdir-32)/config.status:
+$(wobjdir-32)/config.status: config.guess-stamp
 	test -d $(wobjdir-32) || mkdir $(wobjdir-32)
 
 	cf_cv_type_of_bool='unsigned char'; export cf_cv_type_of_bool; \
@@ -245,14 +258,13 @@ $(wobjdir-32)/config.status:
 		BUILD_CC="gcc" BUILD_CPPFLAGS="-D_GNU_SOURCE" CXX="g++ -m32" \
 		$(srcdir)/configure \
 		$(CONFARGS) \
-		--build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(build_32_target) \
 		--without-gpm \
 		--with-install-prefix=$(fulltempdir) \
 		--disable-overwrite --enable-widec \
 		--libdir=$(usr_lib32)
 
-$(objdir-test)/config.status: build-wide
+$(objdir-test)/config.status: build-wide config.guess-stamp
 	test -d $(objdir-test) || mkdir $(objdir-test)
 	cd $(objdir-test) && CFLAGS="$(CFLAGS)" $(srcdir)/test/configure \
 		$(CONFARGS-TEST)
@@ -323,6 +335,7 @@ clean:
 	rm -rf $(wobjdir-debug)
 	rm -rf $(objdir-test)
 	rm -f $(autogen-files)
+	dh_autotools-dev_restoreconfig
 	dh_clean
 
 install: build
@@ -385,14 +398,6 @@ ifeq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
 		$(tempdir)/usr/bin/tic -x debian/$$ti.ti; \
 	done
 else
-	@build_ver=`sed -n -e					\
-	  's/^.*NCURSES_VERSION_STRING \"\(.*\)\"$$/\1/p'	\
-	  obj/include/ncurses_cfg.h`;				\
-	if [ "$$build_ver" != `tic -V | sed 's/^.* //'` ]; then	\
-	  echo "Build environment version mismatch for tic!";	\
-	  exit 1;						\
-	fi
-
 	set -e; \
 	for ti in xterm hurd rxvt rxvt-unicode; do \
 		TERMINFO=$(fulltempdir)/usr/share/terminfo \
@@ -448,9 +453,9 @@ endif
 	dh_installdirs -s
 
 	# Strip the packages, shipping detached debugging symbols.
-	dh_strip -s -N$(package-dbg) -N$(package-dbgw) -N$(package-libw) \
-		--dbg-package=$(package-dbg)
+	dh_strip -s -N$(package-libw) -N$(package-ti) --dbg-package=$(package-dbg)
 	dh_strip -p$(package-libw) --dbg-package=$(package-dbgw)
+	dh_strip -p$(package-ti) --dbg-package=$(package-dbgti)
 	dh_lintian -s
 	dh_compress -p$(package-examples) usr/lib/ncurses/examples/README
 	dh_compress -s -N$(package-examples)

@@ -1,3 +1,95 @@
+ncurses (5.9+20140712-2) unstable; urgency=low
+
+  * Explicitly disable sysmouse support on kfreebsd (Closes: #755250).
+
+ -- Sven Joachim <svenjoac@gmx.de>  Sat, 19 Jul 2014 10:20:21 +0200
+
+ncurses (5.9+20140712-1) unstable; urgency=low
+
+  * New upstream patchlevel.
+    - Update libncurses5 and libncursesw5 symbols files, bump shlibs.
+  * Build-depend on autotools-dev to update config.{guess,sub}.  
+  * Ship st and st-256color terminfo entries in ncurses-term, now that
+    suckless-tools no longer includes them.
+  * Update xterm.ti from xterm 308.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Sat, 19 Jul 2014 07:01:11 +0200
+
+ncurses (5.9+20140118-1) unstable; urgency=low
+
+  * New upstream patchlevel.
+    - Apply includesubdir variable which was introduced in 20130805 to
+      gen-pkgconfig.in (Closes: #735782).
+  * Update years in debian/copyright.
+  * Refresh Debian patches.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Mon, 20 Jan 2014 18:31:56 +0100
+
+ncurses (5.9+20131221-1) unstable; urgency=low
+
+  * New upstream patchlevel.
+    - Update libtinfo5 and libncursesw5 symbols files, bump shlibs.
+  * Sync hurd terminfo description from the Savannah git repository.
+    - Add xenl (Closes: #727119).
+  * Depend on libc6-dev | libc-dev rather than just libc-dev in
+    libncurses{w,}5-dev.
+  * Check GPG signature of upstream tarballs in the watch files.
+  * Upgrade Standards-Version to 3.9.5, no changes needed.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Fri, 10 Jan 2014 18:10:11 +0100
+
+ncurses (5.9+20130608-1) unstable; urgency=low
+
+  * New upstream patchlevel.
+    - Add pow() to configure-check for math library, needed for
+      test/hanoi (Closes: #708056).
+    - Fix regression in error-reporting in lib_setup.c (Closes: #711134).
+  * Add Breaks against dialog (<< 1.2-20130523) to libtinfo5, since
+    older dialog versions misbehave (Closes: #709325).
+  * Move detached debugging symbols for libtinfo5 to libtinfo5-dbg.
+  * Switch Vcs-* fields to anonscm.debian.org.
+  * Upgrade Standards-Version to 3.9.4, no changes needed.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Mon, 10 Jun 2013 20:18:59 +0200
+
+ncurses (5.9+20130504-1) unstable; urgency=low
+
+  * New upstream patchlevel.
+    - modify MKkey_defs.sh to filter out build-path which was
+      unnecessarily shown in curses.h.
+  * The headers should now be identical across architectures where
+    libc-dev is coinstallable, so mark libncurses{w,}5-dev as
+    "Multi-Arch: same" again (Closes: #689131).
+
+ -- Sven Joachim <svenjoac@gmx.de>  Sat, 11 May 2013 13:00:56 +0200
+
+ncurses (5.9+20130119-1) experimental; urgency=low
+
+  * New upstream patchlevel.
+    - Modify init_pair() to accept -1's for color value after
+      assume_default_colors() has been called (Closes: #337095).
+    - Modify name-comparison for tgetstr, etc., to accommodate legacy
+      applications as well as to improve compatibility with BSD 4.2
+      termcap implementations (Closes: #698299).
+    - Add advice in infocmp manpage for termcap users (Closes: #698469).
+    - Update symbols files for new symbols, bump shlibs.
+    - Remove internal symbol _nc_memmove from libncurses{w,5} symbols files.
+  * Drop patches applied upstream: 00-terminfo-update.diff,
+    04-fix-tabset-directory.diff and 05-fix-poll-test.diff.
+  * Adapt patch 03-debian-ncursesconfig-omit-L.diff to upstream changes.
+  * Improve cross-building support:
+    - Don't fail if the system version of tic has a different (upstream)
+      version than the one that is being built (Closes: #681798).
+    - Assume working poll() (see #676461).
+  * Drop /usr/share/terminfo from ncurses-bin (Closes: #678441).
+  * Fix typo in package descriptions (architecure → architecture)
+    (Closes: #697533).
+  * Drop Conflicts on old libc6-i386 versions in the lib32* packages.
+  * Don't unnecessarily depend on g++-multilib on kfreebsd-amd64.
+  * Update years in debian/copyright.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Wed, 23 Jan 2013 18:50:58 +0100
+
 ncurses (5.9-10) unstable; urgency=low
 
   * Drop the dependency of the biarch packages on libtinfo5
