@@ -17,5 +17,4 @@ Files: /usr/share/doc/ncurses-doc/ncurses-intro.doc.gz
 Format: HTML
 Index: /usr/share/doc/ncurses-doc/html/index.html
 Files: /usr/share/doc/ncurses-doc/html/*.html
-       /usr/share/doc/ncurses-doc/html/ada/*.htm
        /usr/share/doc/ncurses-doc/html/man/*.html

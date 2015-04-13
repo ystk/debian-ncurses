@@ -355,7 +355,7 @@ install: build
 	done
 
 	# Install non -DTRACE versions.
-	GZIP='-9' $(MAKE) -C $(objdir) install
+	GZIP='-9n' $(MAKE) -C $(objdir) install
 	$(MAKE) -C $(wobjdir) install.libs
 
 	install -m 644 -t $(fulltempdir)/usr/lib/$(DEB_HOST_MULTIARCH) $(objdir-static)/lib/*.a
@@ -483,7 +483,7 @@ binary-indep: build install $(autogen-files)
 	dh_testdir
 	dh_testroot
 
-	dh_installdocs -i
+	dh_installdocs -i -Xhtml/Ada95.html -Xhtml/ada/
 	dh_installchangelogs -i NEWS
 	dh_install -i --fail-missing
 	dh_lintian -i
