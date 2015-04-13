@@ -29,7 +29,7 @@
 /****************************************************************************
  *  Author: Thomas E. Dickey                    1996-on                     *
  ****************************************************************************/
-/* $Id: test.priv.h,v 1.123 2014/02/01 22:09:27 tom Exp $ */
+/* $Id: test.priv.h,v 1.130 2014/09/05 08:45:09 tom Exp $ */
 
 #ifndef __TEST_PRIV_H
 #define __TEST_PRIV_H 1
@@ -226,12 +226,28 @@
 #define HAVE_USE_DEFAULT_COLORS 0
 #endif
 
+#ifndef HAVE_USE_ENV
+#define HAVE_USE_ENV 0
+#endif
+
+#ifndef HAVE_USE_EXTENDED_NAMES
+#define HAVE_USE_EXTENDED_NAMES 0
+#endif
+
 #ifndef HAVE_USE_SCREEN
 #define HAVE_USE_SCREEN 0
 #endif
 
 #ifndef HAVE_USE_WINDOW
 #define HAVE_USE_WINDOW 0
+#endif
+
+#ifndef HAVE_VIDPUTS
+#define HAVE_VIDPUTS 0
+#endif
+
+#ifndef HAVE_VID_PUTS
+#define HAVE_VID_PUTS 0
 #endif
 
 #ifndef HAVE_WRESIZE
@@ -651,9 +667,9 @@ extern char *strnames[], *strcodes[], *strfnames[];
 #define ExitProgram(code) _nc_free_tinfo(code)
 #endif
 #else
-#define typeMalloc(type,n) (type *) malloc((n) * sizeof(type))
-#define typeCalloc(type,elts) (type *) calloc((elts), sizeof(type))
-#define typeRealloc(type,n,p) (type *) realloc(p, (n) * sizeof(type))
+#define typeMalloc(type,n) (type *) malloc((size_t)(n) * sizeof(type))
+#define typeCalloc(type,elts) (type *) calloc((size_t)(elts), sizeof(type))
+#define typeRealloc(type,n,p) (type *) realloc(p, (size_t)(n) * sizeof(type))
 #endif
 
 #ifndef ExitProgram
@@ -834,6 +850,15 @@ extern char *tgoto(char *, int, int);	/* available, but not prototyped */
 #define MvWHLine        (void) mvwhline
 #define MvVLine         (void) mvvline
 #define MvWVLine        (void) mvwvline
+
+/*
+ * The macro likely uses unsigned values, while X/Open prototype uses int.
+ */
+#if defined(wattrset) || defined(PDCURSES)
+#define AttrArg(p,a)    (attr_t) ((attr_t)(p) | (attr_t)(a))
+#else
+#define AttrArg(p,a)    (int) ((attr_t)(p) | (attr_t)(a))
+#endif
 
 /*
  * Workaround for defective implementation of gcc attribute warn_unused_result

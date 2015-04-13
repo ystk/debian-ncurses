@@ -40,7 +40,7 @@ AUTHOR
    Author: Eric S. Raymond <esr@snark.thyrsus.com> 1993
            Thomas E. Dickey (beginning revision 1.27 in 1996).
 
-$Id: ncurses.c,v 1.410 2014/07/05 22:23:34 tom Exp $
+$Id: ncurses.c,v 1.416 2014/08/16 23:30:20 tom Exp $
 
 ***************************************************************************/
 
@@ -305,7 +305,7 @@ wGetstring(WINDOW *win, char *buffer, int limit)
 static wchar_t
 fullwidth_digit(int ch)
 {
-    return (ch + 0xff10 - '0');
+    return (wchar_t) (ch + 0xff10 - '0');
 }
 
 static void
@@ -323,7 +323,7 @@ make_narrow_text(wchar_t *target, const char *source)
 {
     int ch;
     while ((ch = *source++) != 0) {
-	*target++ = ch;
+	*target++ = (wchar_t) ch;
     }
     *target = 0;
 }
@@ -1436,9 +1436,9 @@ show_attr(WINDOW *win, int row, int skip, bool arrow, chtype attr, const char *n
 	    (void) waddch(win, ch | attr);
 	}
     } else {
-	(void) wattrset(win, attr);
+	(void) wattrset(win, AttrArg(attr, 0));
 	(void) waddstr(win, attr_test_string);
-	(void) wattroff(win, attr);
+	(void) wattroff(win, (int) attr);
     }
     if (skip)
 	printw("%*s", skip, " ");
@@ -1640,6 +1640,7 @@ attr_test(void)
 			beep();
 		    } else {
 			extras |= (chtype) COLOR_PAIR(pair);
+			normal &= ~A_COLOR;
 		    }
 		}
 	    }
@@ -1653,6 +1654,7 @@ attr_test(void)
 	    for (j = 0; j < my_size; ++j) {
 		bool arrow = (j == k);
 		row = show_attr(my_wins[j], row, n, arrow,
+				normal |
 				extras |
 				my_list[j].attr |
 				my_list[k].attr,
@@ -1685,9 +1687,9 @@ static wchar_t wide_attr_test_string[MAX_ATTRSTRING + 1];
 #define FULL_HI 0xff5e
 #define HALF_LO 0x20
 
-#define isFullWidth(ch)   ((ch) >= FULL_LO && (ch) <= FULL_HI)
-#define ToNormalWidth(ch) (((ch) - FULL_LO) + HALF_LO)
-#define ToFullWidth(ch)   (((ch) - HALF_LO) + FULL_LO)
+#define isFullWidth(ch)   ((int)(ch) >= FULL_LO && (int)(ch) <= FULL_HI)
+#define ToNormalWidth(ch) (wchar_t) (((int)(ch) - FULL_LO) + HALF_LO)
+#define ToFullWidth(ch)   (wchar_t) (((int)(ch) - HALF_LO) + FULL_LO)
 
 /*
  * Returns an ASCII code in [32..126]
@@ -1695,7 +1697,7 @@ static wchar_t wide_attr_test_string[MAX_ATTRSTRING + 1];
 static wchar_t
 normal_wchar(int ch)
 {
-    wchar_t result = ch;
+    wchar_t result = (wchar_t) ch;
     if (isFullWidth(ch))
 	result = ToNormalWidth(ch);
     return result;
@@ -1708,7 +1710,7 @@ normal_wchar(int ch)
 static wchar_t
 target_wchar(int ch)
 {
-    wchar_t result = ch;
+    wchar_t result = (wchar_t) ch;
     if (use_fullwidth) {
 	if (!isFullWidth(ch))
 	    result = ToFullWidth(ch);
@@ -1752,7 +1754,7 @@ static void
 wide_init_attr_string(void)
 {
     use_fullwidth = FALSE;
-    wide_attr_test_string[0] = default_attr_string();
+    wide_attr_test_string[0] = (wchar_t) default_attr_string();
     wide_adjust_attr_string(0);
 }
 
@@ -2235,13 +2237,13 @@ color_test(void)
 		NCURSES_COLOR_T bg = InxToBG(i);
 
 		init_pair(pair, fg, bg);
-		attron((attr_t) COLOR_PAIR(pair));
+		attron(COLOR_PAIR(pair));
 		if (opt_acsc)
-		    attron((attr_t) A_ALTCHARSET);
+		    attron(A_ALTCHARSET);
 		if (opt_bold)
-		    attron((attr_t) A_BOLD);
+		    attron(A_BOLD);
 		if (opt_revs)
-		    attron((attr_t) A_REVERSE);
+		    attron(A_REVERSE);
 
 		if (opt_nums) {
 		    sprintf(numbered, "{%02X}", (int) i);
@@ -2446,11 +2448,11 @@ wide_color_test(void)
 		init_pair(pair, InxToFG(i), InxToBG(i));
 		(void) color_set(pair, NULL);
 		if (opt_acsc)
-		    attr_on((attr_t) A_ALTCHARSET, NULL);
+		    attr_on(A_ALTCHARSET, NULL);
 		if (opt_bold)
-		    attr_on((attr_t) A_BOLD, NULL);
+		    attr_on(A_BOLD, NULL);
 		if (opt_revs)
-		    attr_on((attr_t) A_REVERSE, NULL);
+		    attr_on(A_REVERSE, NULL);
 
 		if (opt_nums) {
 		    sprintf(numbered, "{%02X}", i);
@@ -2651,7 +2653,7 @@ color_edit(void)
 		     (i == current ? '>' : ' '),
 		     (i < (int) SIZEOF(the_color_names)
 		      ? the_color_names[i] : numeric));
-	    (void) attrset((attr_t) COLOR_PAIR(i));
+	    (void) attrset(AttrArg(COLOR_PAIR(i), 0));
 	    addstr("        ");
 	    (void) attrset(A_NORMAL);
 
@@ -3609,7 +3611,7 @@ show_paged_widechars(int base,
     MvPrintw(0, 20, "Display of Character Codes %#x to %#x", first, last);
     attroff(A_BOLD);
 
-    for (code = first; (int) code <= last; code++) {
+    for (code = (wchar_t) first; (int) code <= last; code++) {
 	int row = (2 + ((int) code - first) / per_line);
 	int col = 5 * ((int) code % per_line);
 	int count;
@@ -3642,7 +3644,7 @@ show_upper_widechars(int first, int repeat, int space, attr_t attr, NCURSES_PAIR
     MvPrintw(0, 20, "Display of Character Codes %d to %d", first, last);
     attroff(A_BOLD);
 
-    for (code = first; (int) code <= last; code++) {
+    for (code = (wchar_t) first; (int) code <= last; code++) {
 	int row = 2 + ((code - first) % 16);
 	int col = ((code - first) / 16) * COLS / 2;
 	wchar_t codes[10];
@@ -6407,11 +6409,11 @@ overlap_test_1_attr(WINDOW *win, int flavor, int col)
 	break;
     case 2:
 	init_pair(cpair, COLOR_BLUE, COLOR_WHITE);
-	(void) wattrset(win, (int) (COLOR_PAIR(cpair) | A_NORMAL));
+	(void) wattrset(win, AttrArg(COLOR_PAIR(cpair), A_NORMAL));
 	break;
     case 3:
 	init_pair(cpair, COLOR_WHITE, COLOR_BLUE);
-	(void) wattrset(win, (int) (COLOR_PAIR(cpair) | A_BOLD));
+	(void) wattrset(win, AttrArg(COLOR_PAIR(cpair), A_BOLD));
 	break;
     }
 }
@@ -6834,7 +6836,9 @@ usage(void)
 	,"  -a f,b   set default-colors (assumed white-on-black)"
 	,"  -d       use default-colors if terminal supports them"
 #endif
+#if HAVE_USE_ENV
 	,"  -E       call use_env(FALSE) to ignore $LINES and $COLUMNS"
+#endif
 #if USE_SOFTKEYS
 	,"  -e fmt   specify format for soft-keys test (e)"
 #endif
@@ -7054,9 +7058,11 @@ main(int argc, char *argv[])
 	    default_colors = TRUE;
 	    break;
 #endif
+#if HAVE_USE_ENV
 	case 'E':
 	    use_env(FALSE);
 	    break;
+#endif
 	case 'e':
 	    my_e_param = atoi(optarg);
 #ifdef NCURSES_VERSION

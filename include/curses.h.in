@@ -32,7 +32,7 @@
  *     and: Thomas E. Dickey                        1996-on                 *
  ****************************************************************************/
 
-/* $Id: curses.h.in,v 1.239 2014/03/22 22:57:35 tom Exp $ */
+/* $Id: curses.h.in,v 1.241 2014/08/09 20:39:44 tom Exp $ */
 
 #ifndef __NCURSES_H
 #define __NCURSES_H
@@ -74,12 +74,6 @@
  * NCURSES_ATTR_T is used to quiet compiler warnings when building ncurses
  * configured using --disable-macros.
  */
-#ifdef NCURSES_NOMACROS
-#ifndef NCURSES_ATTR_T
-#define NCURSES_ATTR_T attr_t
-#endif
-#endif /* NCURSES_NOMACROS */
-
 #ifndef NCURSES_ATTR_T
 #define NCURSES_ATTR_T int
 #endif
@@ -1154,7 +1148,7 @@ extern NCURSES_EXPORT(int) NCURSES_SP_NAME(use_legacy_coding) (SCREEN*, int);	/*
 #if !NCURSES_OPAQUE
 #if NCURSES_WIDECHAR && @NCURSES_EXT_COLORS@
 #define wattrset(win,at)	((win) \
-				  ? ((win)->_color = PAIR_NUMBER(at), \
+				  ? ((win)->_color = NCURSES_CAST(int, PAIR_NUMBER(at)), \
                                      (win)->_attrs = NCURSES_CAST(attr_t, at), \
                                      OK) \
 				  : ERR)

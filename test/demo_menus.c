@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2005-2012,2013 Free Software Foundation, Inc.              *
+ * Copyright (c) 2005-2013,2014 Free Software Foundation, Inc.              *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -26,7 +26,7 @@
  * authorization.                                                           *
  ****************************************************************************/
 /*
- * $Id: demo_menus.c,v 1.52 2013/09/28 21:55:02 tom Exp $
+ * $Id: demo_menus.c,v 1.54 2014/09/05 08:34:06 tom Exp $
  *
  * Demonstrate a variety of functions from the menu library.
  * Thomas Dickey - 2005/4/9
@@ -97,7 +97,7 @@ typedef enum {
 #define MENU_Y	1
 
 typedef struct {
-    const char *name;
+    NCURSES_CONST char *name;
     void (*func) (int);
     unsigned mask;
 } MENU_DATA;
@@ -111,6 +111,8 @@ static MENU *mpSelect;
 static WINDOW *status;
 
 static bool loaded_file = FALSE;
+
+static char empty[1];
 
 /* Common function to allow ^T to toggle trace-mode in the middle of a test
  * so that trace-files can be made smaller.
@@ -315,7 +317,7 @@ menu_destroy(MENU * m)
 	if ((count > 0) && (m == mpSelect)) {
 	    if (blob && loaded_file) {
 		Trace(("freeing blob %p", blob));
-		free((char *) blob);
+		free((void *) blob);
 	    }
 	    free(items);
 	    items = 0;
@@ -356,8 +358,8 @@ build_file_menu(MenuNo number)
     int n;
 
     for (n = 0; table[n].name != 0; ++n) {
-	*ip = new_item(table[n].name, "");
-	set_item_userptr(*ip, &table[n]);
+	*ip = new_item(table[n].name, empty);
+	set_item_userptr(*ip, (void *) &table[n]);
 	++ip;
     }
     *ip = (ITEM *) 0;
@@ -464,8 +466,8 @@ build_select_menu(MenuNo number, char *filename)
     for (i = 0; ap[i].name != 0; ++i) {
 	ap[i].func = call_select;
 	ap[i].mask = (unsigned) i;
-	*ip = new_item(ap[i].name, "");
-	set_item_userptr(*ip, &table[i]);
+	*ip = new_item(ap[i].name, empty);
+	set_item_userptr(*ip, (void *) &table[i]);
 	++ip;
     }
     *ip = 0;
@@ -526,8 +528,8 @@ build_trace_menu(MenuNo number)
     int n;
 
     for (n = 0; t_tbl[n].name != 0; n++) {
-	*ip = new_item(t_tbl[n].name, "");
-	set_item_userptr(*ip, &t_tbl[n]);
+	*ip = new_item(t_tbl[n].name, empty);
+	set_item_userptr(*ip, (void *) &t_tbl[n]);
 	++ip;
     }
     *ip = (ITEM *) 0;
@@ -683,8 +685,8 @@ build_menus(char *filename)
     int n;
 
     for (n = 0; table[n].name != 0; ++n) {
-	*ip = new_item(table[n].name, "");
-	set_item_userptr(*ip, &table[n]);
+	*ip = new_item(table[n].name, empty);
+	set_item_userptr(*ip, (void *) &table[n]);
 	++ip;
     }
     *ip = (ITEM *) 0;
