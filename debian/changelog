@@ -1,3 +1,25 @@
+ncurses (5.9+20140913-1+deb8u2) jessie; urgency=medium
+
+  * Re-upload with no changes to work around #826161.
+
+ -- Sven Joachim <svenjoac@gmx.de>  Sun, 03 Dec 2017 11:20:45 +0100
+
+ncurses (5.9+20140913-1+deb8u1) jessie; urgency=medium
+
+  * Cherry-pick upstream fixes from the 20170701 and 20170708 patchlevels
+    for various crash bugs in the tic library and the tic binary
+    (CVE-2017-10684, CVE-2017-10685, CVE-2017-11112, CVE-2017-11113).
+  * Apply termcap-format fix from openSUSE's ncurses-5.9-55.6.1 package,
+    repairing a regression from the above security fixes (see #868266).
+  * Cherry-pick upstream fixes from the 20170826 patchlevel for more
+    crash bugs in the tic library (CVE-2017-13728, CVE-2017-13729,
+    CVE-2017-13730, CVE-2017-13731, CVE-2017-13732, CVE-2017-13734,
+    Closes: #873723).
+  * Cherry-pick upstream fixes from the 20170902 patchlevel to fix
+    another crash bug in the tic program (CVE-2017-13733, Closes: #873746).
+
+ -- Sven Joachim <svenjoac@gmx.de>  Thu, 07 Sep 2017 19:08:05 +0200
+
 ncurses (5.9+20140913-1) unstable; urgency=low
 
   * New upstream patchlevel.

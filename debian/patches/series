@@ -1,3 +1,7 @@
 01-debian-no-ada-doc.diff
 02-debian-backspace.diff
 03-debian-ncursesconfig-omit-L.diff
+cve-fixes.diff
+termcap-fix.diff
+more-cve-fixes.diff
+cve-2017-13733.diff
