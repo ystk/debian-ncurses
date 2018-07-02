@@ -1,3 +1,11 @@
+ncurses (5.9+20140913-1+deb8u3) jessie; urgency=medium
+
+  * Cherry-pick upstream fix from the 20171125 patchlevel to fix
+    a buffer overflow in the _nc_write_entry function
+    (CVE-2017-16879, Closes: #882620).
+
+ -- Sven Joachim <svenjoac@gmx.de>  Thu, 28 Dec 2017 11:14:57 +0100
+
 ncurses (5.9+20140913-1+deb8u2) jessie; urgency=medium
 
   * Re-upload with no changes to work around #826161.
