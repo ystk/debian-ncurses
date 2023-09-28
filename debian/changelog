@@ -1,3 +1,11 @@
+ncurses (5.9+20140913-1+deb8u5) jessie-security; urgency=medium
+
+  * Non-maintainer upload by the ELTS Team.
+  * Cherry-pick upstream fix for CVE-2020-19189.
+  * Add additional CVEs fixed to CVE-2019-17594.diff & CVE-2020-17595.diff.
+
+ -- Sean Whitton <spwhitton@spwhitton.name>  Thu, 28 Sep 2023 13:58:15 +0100
+
 ncurses (5.9+20140913-1+deb8u4) jessie; urgency=high
 
   * Non-maintainer upload by the ELTS Team.
